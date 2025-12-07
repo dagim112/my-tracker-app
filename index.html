@@ -40,6 +40,8 @@ h1 { text-align:center; margin-bottom:20px; }
 .task input[type='checkbox'] { width:20px; height:20px; }
 canvas { max-width:150px; max-height:150px; }
 #start-sound { display:block; margin:15px auto; padding:10px 20px; font-size:16px; border-radius:25px; background:#FFAFBD; border:none; cursor:pointer; }
+.day-notes { margin-top:10px; }
+.note-text { width:100%; min-height:60px; padding:10px; border-radius:15px; border:1px solid #ccc; resize: vertical; font-size:14px; }
 </style>
 </head>
 <body>
@@ -67,7 +69,7 @@ daysData.forEach((day, index) => {
   dayDiv.className='day';
   dayDiv.dataset.day = day;
   dayDiv.innerHTML = `
-  <div class="day-title" style="font-weight:bold; margin-top:15px; font-size:16px;">${dayNames[index]}</div>
+  <div class="day-title">${dayNames[index]}</div>
   <div class="day-progress-container">
     <div class="day-progress-bar" id="progress-${day}">0%</div>
   </div>
@@ -89,10 +91,15 @@ daysData.forEach((day, index) => {
   <div class="task">8:00–12:00 💻 Programming / HackYourFuture Prep <input type="checkbox" class="task-checkbox"></div>
   <div class="task">12:00–16:30 🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
   <div class="task">16:30–17:30 💻 Review & Light Coding <input type="checkbox" class="task-checkbox"></div>
+  <div class="day-notes">
+    <label for="note-${day}">📝 Notes / Reason:</label>
+    <textarea id="note-${day}" class="note-text" placeholder="Enter your notes here..."></textarea>
+  </div>
   `;
   container.appendChild(dayDiv);
 });
 
+// Toggle morning routine display
 document.addEventListener('click', function(e){
   if(e.target.classList.contains('morning-title')){
     const container = e.target.nextElementSibling;
@@ -115,10 +122,42 @@ function loadState(){
   });
 }
 
+// Save/load notes
+document.querySelectorAll('.note-text').forEach(note => {
+  note.addEventListener('input', e => {
+    const day = note.closest('.day').dataset.day;
+    localStorage.setItem('note-' + day, note.value);
+  });
+});
+document.querySelectorAll('.note-text').forEach(note => {
+  const day = note.closest('.day').dataset.day;
+  const saved = localStorage.getItem('note-' + day);
+  if(saved) note.value = saved;
+});
+
 // Initialize charts for each day
 document.querySelectorAll('.day').forEach(day => {
   const ctx = day.querySelector('canvas').getContext('2d');
-  morningCharts[day.dataset.day] = new Chart(ctx,{type:'doughnut',data:{labels:['Completed','Remaining'],datasets:[{data:[0,7], backgroundColor:['#4CAF50','#ddd'], borderWidth:1}]},options:{responsive:true,plugins:{legend:{display:true,position:'bottom'},datalabels:{formatter: (value, ctx)=>{const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return ctx.dataIndex===0?Math.round((value/total)*100)+'%':'';},color:'#fff',font:{weight:'bold', size:14}},title:{display:true,text:'Morning Progress',font:{size:14}}}},plugins:[ChartDataLabels]});
+  morningCharts[day.dataset.day] = new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:['Completed','Remaining'],datasets:[{data:[0,7], backgroundColor:['#4CAF50','#ddd'], borderWidth:1}]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:true,position:'bottom'},
+        datalabels:{
+          formatter: (value, ctx)=>{
+            const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            return ctx.dataIndex===0?Math.round((value/total)*100)+'%':'';
+          },
+          color:'#fff',
+          font:{weight:'bold', size:14}
+        },
+        title:{display:true,text:'Morning Progress',font:{size:14}}
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
 });
 
 // Update morning chart and daily/weekly progress
@@ -184,3 +223,4 @@ if("serviceWorker" in navigator){
 </script>
 </body>
 </html>
+
