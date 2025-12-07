@@ -81,6 +81,8 @@ document.querySelectorAll('.note-text').forEach(note => {
   const saved = localStorage.getItem('note-' + day);
   if(saved) note.value = saved;
 });
+
+// Digital clock with milliseconds
 function updateClock() {
   const now = new Date();
   const h = String(now.getHours()).padStart(2,'0');
@@ -89,6 +91,7 @@ function updateClock() {
   const ms = String(now.getMilliseconds()).padStart(3,'0'); // 3-digit milliseconds
   document.getElementById('digital-clock').innerText = `${h}:${m}:${s}:${ms}`;
 }
-setInterval(updateClock, 10); // update every 10ms for smooth microsecond display
+setInterval(updateClock, 10); // update every 10ms for smooth milliseconds
 updateClock(); // initial call
+
 
