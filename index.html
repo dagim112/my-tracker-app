@@ -6,14 +6,32 @@
 <title>Study & Programming Tracker (Mon–Fri)</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
+/* GENERAL */
 body {
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
   padding: 10px;
-  margin:0;
+  margin: 0;
 }
-h1 { text-align:center; margin-bottom:20px; }
+h1 { text-align: center; margin-bottom: 20px; }
+
+/* DIGITAL CLOCK */
+#digital-clock {
+  text-align: center;
+  font-size: 26px;
+  font-family: monospace;
+  font-weight: bold;
+  padding: 12px 20px;
+  margin: 10px auto;
+  width: fit-content;
+  background: #2196F3;
+  color: white;
+  border-radius: 20px;
+}
+
+/* PROGRESS BARS */
 .progress-container, .day-progress-container {
   margin: 10px 0;
   background: #ddd;
@@ -25,40 +43,99 @@ h1 { text-align:center; margin-bottom:20px; }
   height: 20px;
   width: 0%;
   background: #2196F3;
-  text-align:center;
-  color:white;
-  line-height:20px;
-  font-weight:bold;
-  border-radius:20px;
+  color: white;
+  text-align: center;
+  line-height: 20px;
+  font-weight: bold;
+  border-radius: 20px;
   transition: width 0.3s;
 }
-.day-progress-bar { height:15px; font-size:12px; line-height:15px; }
-.task { background:#fff; margin:5px 0; padding:10px; border-radius:50px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: transform 0.2s; }
+.day-progress-bar {
+  height: 15px; 
+  font-size: 12px; 
+  line-height: 15px;
+}
+
+/* TASKS */
+.task {
+  background: #fff;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s;
+}
 .task:hover { transform: scale(1.03); }
-.morning-container { display:flex; justify-content:space-between; align-items:flex-start; margin-top:5px; }
-.morning-subtasks { display:flex; flex-direction:column; font-size:14px; }
-.task input[type='checkbox'] { width:20px; height:20px; }
-canvas { max-width:150px; max-height:150px; }
-#start-sound { display:block; margin:15px auto; padding:10px 20px; font-size:16px; border-radius:25px; background:#FFAFBD; border:none; cursor:pointer; }
-.day-notes { margin-top:10px; }
-.note-text { width:100%; min-height:60px; padding:10px; border-radius:15px; border:1px solid #ccc; resize: vertical; font-size:14px; }
+.morning-container {
+  display: none;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 5px;
+}
+.morning-subtasks { 
+  display: flex; 
+  flex-direction: column; 
+  font-size: 14px; 
+}
+canvas { 
+  max-width: 150px; 
+  max-height: 150px; 
+}
+
+/* NOTES */
+.day-notes { margin-top: 10px; }
+.note-text {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  border-radius: 15px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  font-size: 14px;
+}
+
+/* REMINDER BUTTON */
+#start-sound {
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 25px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+}
 </style>
+
 </head>
 <body>
 
 <h1>Study & Programming Tracker (Mon–Fri)</h1>
-<div id="digital-clock" style="text-align:center; font-size:24px; font-family:monospace; margin:10px 0;"></div>
+
+<!-- DIGITAL CLOCK -->
+<div id="digital-clock"></div>
+
+<!-- WEEKLY PROGRESS -->
 <div class="progress-container">
   <div class="progress-bar" id="weekly-progress">0%</div>
 </div>
 
+<!-- AUDIO REMINDER -->
 <button id="start-sound">Start Hourly Voice Reminder</button>
 <audio id="my-sound" src="your-voice.mp3" preload="auto"></audio>
+
 <div class="days-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
 <script>
+/* ============================== */
+/* CREATE DAY SECTIONS */
+/* ============================== */
 const daysData = ['mon','tue','wed','thu','fri'];
 const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 const container = document.querySelector('.days-container');
@@ -68,158 +145,196 @@ daysData.forEach((day, index) => {
   const dayDiv = document.createElement('div');
   dayDiv.className='day';
   dayDiv.dataset.day = day;
+
   dayDiv.innerHTML = `
-  <div class="day-title">${dayNames[index]}</div>
-  <div class="day-progress-container">
-    <div class="day-progress-bar" id="progress-${day}">0%</div>
-  </div>
-  <div class="task morning">
-    <span class="morning-title">🌞 Morning Routine (6:00–8:00)</span>
-    <div class="morning-container" style="display:none;">
-      <div class="morning-subtasks">
-        <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
-        <label><input type="checkbox" class="morning-checkbox"> Prayer / Meditation</label>
-        <label><input type="checkbox" class="morning-checkbox"> Visualization</label>
-        <label><input type="checkbox" class="morning-checkbox"> Exercise / Stretch</label>
-        <label><input type="checkbox" class="morning-checkbox"> Healthy Breakfast</label>
-        <label><input type="checkbox" class="morning-checkbox"> Reading / Learning</label>
-        <label><input type="checkbox" class="morning-checkbox"> Journaling</label>
-      </div>
-      <canvas id="morningChart-${day}"></canvas>
+    <h2>${dayNames[index]}</h2>
+
+    <div class="day-progress-container">
+      <div class="day-progress-bar" id="progress-${day}">0%</div>
     </div>
-  </div>
-  <div class="task">8:00–12:00 💻 Programming / HackYourFuture Prep <input type="checkbox" class="task-checkbox"></div>
-  <div class="task">12:00–16:30 🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
-  <div class="task">16:30–17:30 💻 Review & Light Coding <input type="checkbox" class="task-checkbox"></div>
-  <div class="day-notes">
-    <label for="note-${day}">📝 Notes / Reason:</label>
-    <textarea id="note-${day}" class="note-text" placeholder="Enter your notes here..."></textarea>
-  </div>
+
+    <div class="task morning">
+      <span class="morning-title">🌞 Morning Routine (6:00–8:00)</span>
+      <div class="morning-container">
+        <div class="morning-subtasks">
+          <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
+          <label><input type="checkbox" class="morning-checkbox"> Prayer / Meditation</label>
+          <label><input type="checkbox" class="morning-checkbox"> Visualization</label>
+          <label><input type="checkbox" class="morning-checkbox"> Exercise / Stretch</label>
+          <label><input type="checkbox" class="morning-checkbox"> Healthy Breakfast</label>
+          <label><input type="checkbox" class="morning-checkbox"> Reading / Learning</label>
+          <label><input type="checkbox" class="morning-checkbox"> Journaling</label>
+        </div>
+        <canvas id="morningChart-${day}"></canvas>
+      </div>
+    </div>
+
+    <div class="task">8:00–12:00 💻 Programming / HYF Prep <input type="checkbox" class="task-checkbox"></div>
+    <div class="task">12:00–16:30 🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
+    <div class="task">16:30–17:30 💻 Review & Light Coding <input type="checkbox" class="task-checkbox"></div>
+
+    <div class="day-notes">
+      <label>📝 Notes / Reason:</label>
+      <textarea class="note-text"></textarea>
+    </div>
   `;
+
   container.appendChild(dayDiv);
 });
 
-// Toggle morning routine display
-document.addEventListener('click', function(e){
-  if(e.target.classList.contains('morning-title')){
-    const container = e.target.nextElementSibling;
-    container.style.display = container.style.display==='none'?'flex':'none';
+/* ============================== */
+/* TOGGLE MORNING SECTION */
+/* ============================== */
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('morning-title')) {
+    const box = e.target.nextElementSibling;
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
   }
 });
 
-// Save/load state
+/* ============================== */
+/* SAVE CHECKBOX STATES */
+/* ============================== */
 function saveState(){
-  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb=>{
-    const id = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
-    localStorage.setItem(id, cb.checked);
+  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
+    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
+    localStorage.setItem(key, cb.checked);
   });
 }
+
 function loadState(){
-  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb=>{
-    const id = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
-    const saved = localStorage.getItem(id);
-    if(saved==='true') cb.checked=true;
+  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
+    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
+    if (localStorage.getItem(key) === 'true') cb.checked = true;
   });
 }
 
-// Save/load notes
-document.querySelectorAll('.note-text').forEach(note => {
-  note.addEventListener('input', e => {
-    const day = note.closest('.day').dataset.day;
-    localStorage.setItem('note-' + day, note.value);
-  });
-});
-document.querySelectorAll('.note-text').forEach(note => {
-  const day = note.closest('.day').dataset.day;
-  const saved = localStorage.getItem('note-' + day);
-  if(saved) note.value = saved;
+/* ============================== */
+/* SAVE NOTES */
+/* ============================== */
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('note-text')) {
+    const key = 'note-' + e.target.closest('.day').dataset.day;
+    localStorage.setItem(key, e.target.value);
+  }
 });
 
-// Initialize charts for each day
+document.querySelectorAll('.note-text').forEach(note => {
+  const key = 'note-' + note.closest('.day').dataset.day;
+  const saved = localStorage.getItem(key);
+  if (saved) note.value = saved;
+});
+
+/* ============================== */
+/* CHARTS */
+/* ============================== */
 document.querySelectorAll('.day').forEach(day => {
   const ctx = day.querySelector('canvas').getContext('2d');
   morningCharts[day.dataset.day] = new Chart(ctx,{
     type:'doughnut',
-    data:{labels:['Completed','Remaining'],datasets:[{data:[0,7], backgroundColor:['#4CAF50','#ddd'], borderWidth:1}]},
+    data:{
+      labels:['Completed','Remaining'],
+      datasets:[{ data:[0,7], backgroundColor:['#4CAF50','#ccc'] }]
+    },
     options:{
       responsive:true,
       plugins:{
-        legend:{display:true,position:'bottom'},
+        legend:{ display:false },
         datalabels:{
           formatter: (value, ctx)=>{
-            const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-            return ctx.dataIndex===0?Math.round((value/total)*100)+'%':'';
+            const total = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            return ctx.dataIndex === 0 ? Math.round((value/total)*100)+'%' : '';
           },
-          color:'#fff',
-          font:{weight:'bold', size:14}
-        },
-        title:{display:true,text:'Morning Progress',font:{size:14}}
+          color:'#fff'
+        }
       }
     },
     plugins:[ChartDataLabels]
   });
 });
 
-// Update morning chart and daily/weekly progress
+/* ============================== */
+/* UPDATE PROGRESS */
+/* ============================== */
 function updateMorningChart(day){
   const chart = morningCharts[day.dataset.day];
-  const checkboxes = day.querySelectorAll('.morning-checkbox');
-  const completed = Array.from(checkboxes).filter(cb=>cb.checked).length;
-  const total = checkboxes.length;
-  chart.data.datasets[0].data=[completed,total-completed];
+  const boxes = day.querySelectorAll('.morning-checkbox');
+  const completed = [...boxes].filter(cb => cb.checked).length;
+  chart.data.datasets[0].data = [completed, boxes.length - completed];
   chart.update();
-  return completed/total;
-}
-function updateProgress(){
-  const days = document.querySelectorAll('.day');
-  let totalTasks=0,totalCompleted=0;
-  days.forEach(day=>{
-    const morningFraction = updateMorningChart(day);
-    const morningWeight = 1;
-    const morningCompleted = morningFraction*morningWeight;
-    const otherTasks = day.querySelectorAll('.task-checkbox');
-    const totalDayTasks = morningWeight + otherTasks.length;
-    const completedDayTasks = morningCompleted + Array.from(otherTasks).filter(cb=>cb.checked).length;
-    const dailyPercent = Math.round((completedDayTasks/totalDayTasks)*100);
-    const dailyBar = day.querySelector('.day-progress-bar');
-    dailyBar.style.width=dailyPercent+'%';
-    dailyBar.innerText=`${dailyPercent}% (Goal: 80%)`;
-    dailyBar.style.background=dailyPercent>=80?'#4CAF50':'#2196F3';
-    totalTasks+=totalDayTasks;
-    totalCompleted+=completedDayTasks;
-  });
-  const weeklyPercent=Math.round((totalCompleted/totalTasks)*100);
-  const weeklyBar=document.getElementById('weekly-progress');
-  weeklyBar.style.width=weeklyPercent+'%';
-  weeklyBar.innerText=`${weeklyPercent}% (Goal: 90%)`;
-  weeklyBar.style.background=weeklyPercent>=90?'#4CAF50':'#2196F3';
+  return completed / boxes.length;
 }
 
-// Checkbox events
-document.addEventListener('change', e=>{
-  if(e.target.classList.contains('morning-checkbox')||e.target.classList.contains('task-checkbox')){
+function updateProgress(){
+  let total = 0, done = 0;
+
+  document.querySelectorAll('.day').forEach(day => {
+    let morningPercent = updateMorningChart(day);
+
+    const tasks = day.querySelectorAll('.task-checkbox');
+    const taskDone = [...tasks].filter(cb => cb.checked).length;
+
+    const dayTotal = 1 + tasks.length;  
+    const dayDone = morningPercent + taskDone;
+
+    total += dayTotal;
+    done += dayDone;
+
+    const percent = Math.round((dayDone / dayTotal) * 100);
+    const bar = day.querySelector('.day-progress-bar');
+    bar.style.width = percent + '%';
+    bar.innerText = percent + '%';
+  });
+
+  const weekly = Math.round((done / total) * 100);
+  const weeklyBar = document.getElementById('weekly-progress');
+  weeklyBar.style.width = weekly + '%';
+  weeklyBar.innerText = weekly + '%';
+}
+
+/* CHECKBOX LISTENER */
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox') {
     saveState();
     updateProgress();
   }
 });
 
-// Initialize
+/* INITIALIZE */
 loadState();
 updateProgress();
 
-// Hourly voice reminder
-const audio=document.getElementById('my-sound');
-const button=document.getElementById('start-sound');
-let timer;
-button.addEventListener('click',()=>{
-  audio.play().catch(e=>console.log(e));
-  timer=setInterval(()=>{audio.play().catch(e=>console.log(e));},3600000);
-  alert('Hourly voice reminders started!');
+/* ============================== */
+/* HOURLY REMINDER */
+/* ============================== */
+const audio = document.getElementById('my-sound');
+document.getElementById('start-sound').addEventListener('click', () => {
+  audio.play();
+  setInterval(() => audio.play(), 3600000);
+  alert("Hourly reminder started!");
 });
 
-if("serviceWorker" in navigator){
+/* ============================== */
+/* DIGITAL CLOCK */
+/* ============================== */
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById("digital-clock").textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 16);
+updateClock();
+
+/* SERVICE WORKER */
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
+</script>
+
 </body>
 </html>
+
 
