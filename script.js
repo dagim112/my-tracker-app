@@ -1,0 +1,69 @@
+const checkboxes = document.querySelectorAll('.task-checkbox');
+const dailyPercentEl = document.getElementById('dailyPercent');
+const weeklyPercentEl = document.getElementById('weeklyPercent');
+const progressChartCtx = document.getElementById('progressChart').getContext('2d');
+
+// Load saved data from localStorage
+const savedData = JSON.parse(localStorage.getItem('trackerData')) || {};
+checkboxes.forEach(chk => {
+  const id = chk.parentElement.dataset.id;
+  if(savedData[id]) chk.checked = true;
+});
+
+// Calculate and update progress
+function updateProgress() {
+  const total = checkboxes.length;
+  let completed = 0;
+  checkboxes.forEach(chk => { if(chk.checked) completed++; });
+
+  const dailyPercent = Math.round((completed/total)*100);
+  dailyPercentEl.textContent = `Daily Progress: ${dailyPercent}%`;
+
+  // For weekly, you can implement your own logic or sum daily percentages
+  const weeklyPercent = dailyPercent; // placeholder
+  weeklyPercentEl.textContent = `Weekly Progress: ${weeklyPercent}%`;
+
+  // Update chart
+  progressChart.data.datasets[0].data = [completed, total-completed];
+  progressChart.update();
+}
+
+// Save data to localStorage
+function saveData() {
+  const data = {};
+  checkboxes.forEach(chk => {
+    const id = chk.parentElement.dataset.id;
+    data[id] = chk.checked;
+  });
+  localStorage.setItem('trackerData', JSON.stringify(data));
+}
+
+// Add event listeners
+checkboxes.forEach(chk => {
+  chk.addEventListener('change', () => {
+    saveData();
+    updateProgress();
+  });
+});
+
+// Initialize Chart.js
+const progressChart = new Chart(progressChartCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Completed', 'Remaining'],
+    datasets: [{
+      data: [0, checkboxes.length],
+      backgroundColor: ['#FFAFBD', '#ffc3a0']
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: { enabled: true }
+    }
+  }
+});
+
+// Initial update
+updateProgress();
