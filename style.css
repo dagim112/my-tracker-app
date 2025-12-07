@@ -1,0 +1,61 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+main {
+  padding: 20px;
+}
+
+.tasks {
+  margin-bottom: 30px;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task.pill {
+  background: linear-gradient(90deg, #FFAFBD, #ffc3a0);
+  padding: 12px 20px;
+  border-radius: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.task.pill:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+.task input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+
+.progress {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#dailyPercent, #weeklyPercent {
+  margin-top: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
