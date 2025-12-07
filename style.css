@@ -1,45 +1,58 @@
+/* ----------------------------- */
+/* GENERAL BODY AND HEADINGS */
+/* ----------------------------- */
 body {
   font-family: 'Arial', sans-serif;
   background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
   margin: 0;
-  padding: 0;
+  padding: 10px;
   color: #333;
 }
 
-header {
+h1, header {
   text-align: center;
-  padding: 20px;
   font-size: 1.8em;
   font-weight: bold;
+  margin-bottom: 20px;
 }
 
 main {
   padding: 20px;
 }
 
-.tasks {
-  margin-bottom: 30px;
+/* ----------------------------- */
+/* DIGITAL CLOCK */
+/* ----------------------------- */
+#digital-clock {
+  display: block;
+  text-align: center;
+  font-size: 24px; /* medium size */
+  font-family: monospace;
+  font-weight: bold;
+  padding: 15px 20px;
+  margin: 10px auto;
+  background-color: #2196F3;
+  color: #fff;
+  border-radius: 25px;
+  width: fit-content;
 }
 
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.task.pill {
-  background: linear-gradient(90deg, #FFAFBD, #ffc3a0);
+/* ----------------------------- */
+/* TASKS */
+/* ----------------------------- */
+.task {
+  background: #fff;
+  margin: 5px 0;
   padding: 12px 20px;
   border-radius: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.1em;
   cursor: pointer;
   transition: transform 0.2s, opacity 0.2s;
 }
 
-.task.pill:hover {
+.task:hover {
   transform: scale(1.03);
   opacity: 0.9;
 }
@@ -49,36 +62,106 @@ main {
   height: 20px;
 }
 
-.progress {
-  text-align: center;
-  margin-top: 20px;
+/* Pill-style task */
+.task.pill {
+  background: linear-gradient(90deg, #FFAFBD, #ffc3a0);
 }
 
-#dailyPercent, #weeklyPercent {
-  margin-top: 10px;
-  font-size: 1.2em;
-  font-weight: bold;
+/* ----------------------------- */
+/* PROGRESS BARS */
+/* ----------------------------- */
+.progress-container, .day-progress-container {
+  background: #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 10px 0;
+  position: relative;
 }
+
+.progress-bar, .day-progress-bar {
+  height: 20px;
+  width: 0%;
+  background: #2196F3;
+  color: white;
+  text-align: center;
+  line-height: 20px;
+  font-weight: bold;
+  border-radius: 20px;
+  transition: width 0.3s, background 0.3s;
+}
+
+.day-progress-bar {
+  height: 15px;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+/* ----------------------------- */
+/* MORNING ROUTINE SUBTASKS */
+/* ----------------------------- */
+.morning-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 5px;
+}
+
+.morning-subtasks {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.morning-subtasks label {
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+/* ----------------------------- */
+/* CHART CANVAS */
+/* ----------------------------- */
+canvas {
+  max-width: 150px;
+  max-height: 150px;
+  margin-left: 10px;
+}
+
+/* ----------------------------- */
+/* NOTES AREA */
+/* ----------------------------- */
 .day-notes {
-  margin-top:10px;
+  margin-top: 10px;
 }
 
 .note-text {
-  width:100%;
-  min-height:60px;
-  padding:10px;
-  border-radius:15px;
-  border:1px solid #ccc;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  border-radius: 15px;
+  border: 1px solid #ccc;
   resize: vertical;
-  font-size:14px;
+  font-size: 14px;
 }
-#digital-clock {
-  display:inline-block;
-  padding:20px 20px;
-  background:#2196F3;
-  color:white;
-  border-radius:25px;
-  font-weight:bold;
+
+/* ----------------------------- */
+/* START SOUND BUTTON */
+/* ----------------------------- */
+#start-sound {
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 25px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
 }
+
+#start-sound:hover {
+  background: #ffc3a0;
+  transform: scale(1.05);
+}
+
 
 
