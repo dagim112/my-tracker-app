@@ -3,19 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study & Programming Tracker with Pie %</title>
+<title>Study & Programming Tracker (Mon–Fri)</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
-body { font-family: Arial, sans-serif; background:#f0f0f0; padding:10px; }
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+  padding: 10px;
+  margin:0;
+}
 h1 { text-align:center; margin-bottom:20px; }
-.day-title { font-weight:bold; margin-top:15px; font-size:16px; }
-.task { background:#fff; margin:5px 0; padding:10px; border-left:5px solid #4CAF50; border-radius:5px; cursor:pointer; }
+.progress-container, .day-progress-container {
+  margin: 10px 0;
+  background: #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar, .day-progress-bar {
+  height: 20px;
+  width: 0%;
+  background: #2196F3;
+  text-align:center;
+  color:white;
+  line-height:20px;
+  font-weight:bold;
+  border-radius:20px;
+  transition: width 0.3s;
+}
+.day-progress-bar { height:15px; font-size:12px; line-height:15px; }
+.task { background:#fff; margin:5px 0; padding:10px; border-radius:50px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition: transform 0.2s; }
+.task:hover { transform: scale(1.03); }
 .morning-container { display:flex; justify-content:space-between; align-items:flex-start; margin-top:5px; }
 .morning-subtasks { display:flex; flex-direction:column; font-size:14px; }
-.progress-container, .day-progress-container { margin:10px 0; background:#ddd; border-radius:5px; overflow:hidden; position:relative; }
-.progress-bar, .day-progress-bar { height:20px; width:0%; background:#2196F3; text-align:center; color:white; line-height:20px; font-weight:bold; }
-.day-progress-bar { height:15px; font-size:12px; line-height:15px; }
+.task input[type='checkbox'] { width:20px; height:20px; }
 canvas { max-width:150px; max-height:150px; }
-#start-sound { display:block; margin:15px auto; padding:10px 20px; font-size:16px; }
+#start-sound { display:block; margin:15px auto; padding:10px 20px; font-size:16px; border-radius:25px; background:#FFAFBD; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -24,36 +48,29 @@ canvas { max-width:150px; max-height:150px; }
 
 <div class="progress-container">
   <div class="progress-bar" id="weekly-progress">0%</div>
-  <div class="goal-line" style="left:90%"></div>
 </div>
 
 <button id="start-sound">Start Hourly Voice Reminder</button>
 <audio id="my-sound" src="your-voice.mp3" preload="auto"></audio>
-
 <div class="days-container"></div>
 
-<!-- Chart.js + DataLabels plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
 <script>
-// Generate days dynamically
 const daysData = ['mon','tue','wed','thu','fri'];
 const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 const container = document.querySelector('.days-container');
+const morningCharts = {};
 
 daysData.forEach((day, index) => {
   const dayDiv = document.createElement('div');
   dayDiv.className='day';
   dayDiv.dataset.day = day;
   dayDiv.innerHTML = `
-  <div class="day-title">${dayNames[index]}</div>
+  <div class="day-title" style="font-weight:bold; margin-top:15px; font-size:16px;">${dayNames[index]}</div>
   <div class="day-progress-container">
     <div class="day-progress-bar" id="progress-${day}">0%</div>
-    <div class="day-goal-line" style="left:80%"></div>
   </div>
-
-  <!-- Morning Routine -->
   <div class="task morning">
     <span class="morning-title">🌞 Morning Routine (6:00–8:00)</span>
     <div class="morning-container" style="display:none;">
@@ -69,61 +86,18 @@ daysData.forEach((day, index) => {
       <canvas id="morningChart-${day}"></canvas>
     </div>
   </div>
-
-  <!-- Programming / HackYourFuture Prep -->
-  <div class="task">8:00–12:00 💻 Programming Practice / HackYourFuture Prep
-    <input type="checkbox" class="task-checkbox">
-  </div>
-
-  <!-- Dutch Course -->
-  <div class="task">12:00–16:30 🇳🇱 Dutch Course
-    <input type="checkbox" class="task-checkbox">
-  </div>
-
-  <!-- Review / Light Coding -->
-  <div class="task">16:30–17:30 💻 Review & Light Coding
-    <input type="checkbox" class="task-checkbox">
-  </div>
+  <div class="task">8:00–12:00 💻 Programming / HackYourFuture Prep <input type="checkbox" class="task-checkbox"></div>
+  <div class="task">12:00–16:30 🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
+  <div class="task">16:30–17:30 💻 Review & Light Coding <input type="checkbox" class="task-checkbox"></div>
   `;
   container.appendChild(dayDiv);
 });
 
-// Toggle morning routine display
 document.addEventListener('click', function(e){
   if(e.target.classList.contains('morning-title')){
     const container = e.target.nextElementSibling;
     container.style.display = container.style.display==='none'?'flex':'none';
   }
-});
-
-// Initialize charts for each day
-const morningCharts = {};
-document.querySelectorAll('.day').forEach(day => {
-  const ctx = day.querySelector('canvas').getContext('2d');
-  morningCharts[day.dataset.day] = new Chart(ctx,{
-    type:'doughnut',
-    data:{
-      labels:['Completed','Remaining'],
-      datasets:[{data:[0,7], backgroundColor:['#4CAF50','#ddd'], borderWidth:1}]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:true,position:'bottom'},
-        datalabels:{
-          formatter: (value, ctx) => {
-            const total = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-            const percent = Math.round((value/total)*100);
-            return ctx.dataIndex === 0 ? percent+'%' : '';
-          },
-          color:'#fff',
-          font:{weight:'bold', size:14}
-        },
-        title:{display:true,text:'Morning Progress',font:{size:14}}
-      }
-    },
-    plugins:[ChartDataLabels]
-  });
 });
 
 // Save/load state
@@ -141,7 +115,13 @@ function loadState(){
   });
 }
 
-// Update morning chart and return fraction for daily %
+// Initialize charts for each day
+document.querySelectorAll('.day').forEach(day => {
+  const ctx = day.querySelector('canvas').getContext('2d');
+  morningCharts[day.dataset.day] = new Chart(ctx,{type:'doughnut',data:{labels:['Completed','Remaining'],datasets:[{data:[0,7], backgroundColor:['#4CAF50','#ddd'], borderWidth:1}]},options:{responsive:true,plugins:{legend:{display:true,position:'bottom'},datalabels:{formatter: (value, ctx)=>{const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return ctx.dataIndex===0?Math.round((value/total)*100)+'%':'';},color:'#fff',font:{weight:'bold', size:14}},title:{display:true,text:'Morning Progress',font:{size:14}}}},plugins:[ChartDataLabels]});
+});
+
+// Update morning chart and daily/weekly progress
 function updateMorningChart(day){
   const chart = morningCharts[day.dataset.day];
   const checkboxes = day.querySelectorAll('.morning-checkbox');
@@ -151,11 +131,9 @@ function updateMorningChart(day){
   chart.update();
   return completed/total;
 }
-
-// Update daily and weekly progress
 function updateProgress(){
   const days = document.querySelectorAll('.day');
-  let totalTasks=0, totalCompleted=0;
+  let totalTasks=0,totalCompleted=0;
   days.forEach(day=>{
     const morningFraction = updateMorningChart(day);
     const morningWeight = 1;
@@ -199,12 +177,10 @@ button.addEventListener('click',()=>{
   timer=setInterval(()=>{audio.play().catch(e=>console.log(e));},3600000);
   alert('Hourly voice reminders started!');
 });
-</script>
-<script>
+
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("service-worker.js");
 }
 </script>
-
 </body>
 </html>
