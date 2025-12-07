@@ -67,3 +67,18 @@ const progressChart = new Chart(progressChartCtx, {
 
 // Initial update
 updateProgress();
+// Save note to localStorage
+document.querySelectorAll('.note-text').forEach(note => {
+  note.addEventListener('input', e => {
+    const day = note.closest('.day').dataset.day;
+    localStorage.setItem('note-' + day, note.value);
+  });
+});
+
+// Load saved notes on page load
+document.querySelectorAll('.note-text').forEach(note => {
+  const day = note.closest('.day').dataset.day;
+  const saved = localStorage.getItem('note-' + day);
+  if(saved) note.value = saved;
+});
+
