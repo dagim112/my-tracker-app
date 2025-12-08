@@ -160,6 +160,56 @@ button.addEventListener('click',()=>{
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("service-worker.js");
 }
+/* ============================== */
+/* DAILY MONEY TRACKER */
+/* ============================== */
+document.querySelectorAll('.day').forEach(day => {
+  const addBtn = day.querySelector('.add-expense');
+  const input = day.querySelector('.expense-input');
+  const category = day.querySelector('.expense-category');
+  const list = day.querySelector('.expense-list');
+  const totalSpan = day.querySelector('.expense-total');
+  const dayKey = 'money-' + day.dataset.day;
+
+  // Load saved expenses
+  let expenses = JSON.parse(localStorage.getItem(dayKey)) || [];
+  function renderExpenses() {
+    list.innerHTML = '';
+    let total = 0;
+    expenses.forEach((e, i) => {
+      const li = document.createElement('li');
+      li.textContent = `${e.category}: €${e.amount}`;
+      li.style.cursor = 'pointer';
+      li.title = "Click to remove";
+      li.addEventListener('click', () => {
+        expenses.splice(i,1);
+        saveExpenses();
+        renderExpenses();
+      });
+      list.appendChild(li);
+      total += parseFloat(e.amount);
+    });
+    totalSpan.textContent = total.toFixed(2);
+  }
+
+  function saveExpenses() {
+    localStorage.setItem(dayKey, JSON.stringify(expenses));
+  }
+
+  addBtn.addEventListener('click', () => {
+    const amount = parseFloat(input.value);
+    const cat = category.value;
+    if (!isNaN(amount) && amount > 0) {
+      expenses.push({amount, category: cat});
+      saveExpenses();
+      renderExpenses();
+      input.value = '';
+    }
+  });
+
+  renderExpenses();
+});
+
 
 
 
