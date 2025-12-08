@@ -162,6 +162,29 @@ canvas {
   background: #ffc3a0;
   transform: scale(1.05);
 }
+.day-money {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+.expense-input, .expense-category {
+  padding: 5px;
+  margin-right: 5px;
+}
+.add-expense {
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+}
+.expense-list {
+  margin-top: 5px;
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
 
 
 
