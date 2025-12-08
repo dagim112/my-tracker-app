@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study & Programming Tracker (Mon–Fri)</title>
+<title>Study & Programming Tracker (Mon–Fri) + Money Tracker</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -108,12 +108,36 @@ canvas {
   border: none;
   cursor: pointer;
 }
+
+/* MONEY TRACKER */
+.day-money {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+.expense-input, .expense-category {
+  padding: 5px;
+  margin-right: 5px;
+}
+.add-expense {
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+}
+.expense-list {
+  margin-top: 5px;
+  list-style-type: disc;
+  padding-left: 20px;
+}
 </style>
 
 </head>
 <body>
 
-<h1>Study & Programming Tracker (Mon–Fri)</h1>
+<h1>Study & Programming Tracker (Mon–Fri) + Money Tracker</h1>
 
 <!-- DIGITAL CLOCK -->
 <div id="digital-clock"></div>
@@ -176,6 +200,23 @@ daysData.forEach((day, index) => {
     <div class="day-notes">
       <label>📝 Notes / Reason:</label>
       <textarea class="note-text"></textarea>
+    </div>
+
+    <!-- MONEY TRACKER -->
+    <div class="day-money">
+      <label>💰 Daily Expenses:</label>
+      <input type="number" class="expense-input" placeholder="Amount spent (€)">
+      <select class="expense-category">
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Bills">Bills</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="add-expense">Add</button>
+
+      <ul class="expense-list"></ul>
+      <div>Total: €<span class="expense-total">0</span></div>
     </div>
   `;
 
@@ -328,6 +369,56 @@ function updateClock() {
 setInterval(updateClock, 16);
 updateClock();
 
+/* ============================== */
+/* DAILY MONEY TRACKER */
+/* ============================== */
+document.querySelectorAll('.day').forEach(day => {
+  const addBtn = day.querySelector('.add-expense');
+  const input = day.querySelector('.expense-input');
+  const category = day.querySelector('.expense-category');
+  const list = day.querySelector('.expense-list');
+  const totalSpan = day.querySelector('.expense-total');
+  const dayKey = 'money-' + day.dataset.day;
+
+  // Load saved expenses
+  let expenses = JSON.parse(localStorage.getItem(dayKey)) || [];
+  function renderExpenses() {
+    list.innerHTML = '';
+    let total = 0;
+    expenses.forEach((e, i) => {
+      const li = document.createElement('li');
+      li.textContent = `${e.category}: €${e.amount}`;
+      li.style.cursor = 'pointer';
+      li.title = "Click to remove";
+      li.addEventListener('click', () => {
+        expenses.splice(i,1);
+        saveExpenses();
+        renderExpenses();
+      });
+      list.appendChild(li);
+      total += parseFloat(e.amount);
+    });
+    totalSpan.textContent = total.toFixed(2);
+  }
+
+  function saveExpenses() {
+    localStorage.setItem(dayKey, JSON.stringify(expenses));
+  }
+
+  addBtn.addEventListener('click', () => {
+    const amount = parseFloat(input.value);
+    const cat = category.value;
+    if (!isNaN(amount) && amount > 0) {
+      expenses.push({amount, category: cat});
+      saveExpenses();
+      renderExpenses();
+      input.value = '';
+    }
+  });
+
+  renderExpenses();
+});
+
 /* SERVICE WORKER */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
@@ -336,5 +427,6 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
