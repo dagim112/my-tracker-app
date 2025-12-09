@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly Tracker</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+<body>
+
+<h1>Weekly Tracker (Mon–Sun)</h1>
+
+<div id="digital-clock"></div>
+
+<!-- Weekly progress bar -->
+<div class="progress-container">
+  <div class="progress-bar" id="weekly-progress">0%</div>
+</div>
+
+<div class="days-container"></div>
+
+<!-- Top-right menu -->
+<div class="top-right">
+  <button onclick="window.location.href='monthly.html'">Monthly Report</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
