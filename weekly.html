@@ -1,3 +1,90 @@
-<button onclick="window.location.href='daily.html'">Daily Report</button>
-<button onclick="window.location.href='monthly.html'">Monthly Report</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly Tracker</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body { background-color:#111; color:#fff; font-family:Arial, sans-serif; margin:0; padding:20px; }
+h1 { text-align:center; margin-bottom:20px; }
+#digital-clock { text-align:center; font-family:monospace; font-size:28px; font-weight:bold; margin-bottom:20px; }
+.day { background:#222; padding:15px; border-radius:12px; margin-bottom:12px; }
+.day h2 { margin:0 0 6px 0; }
+.progress-bar { height:20px; background:#2196F3; text-align:center; line-height:20px; border-radius:10px; width:0; }
+.task { display:flex; justify-content:space-between; margin:6px 0; }
+button { padding:10px 16px; margin:4px; border:none; border-radius:8px; cursor:pointer; }
+.button-report { background:#1976D2; color:#fff; }
+</style>
+</head>
+<body>
+
+<h1>Weekly Tracker (Mon–Sun)</h1>
+<div id="digital-clock"></div>
+
+<div id="weekly-progress" class="progress-bar">0%</div>
+
+<div id="days-container">
+  <!-- Days will be added by JS -->
+</div>
+
+<div style="text-align:center; margin-top:20px;">
+  <button onclick="window.location.href='daily.html'" class="button-report">Daily Report</button>
+  <button onclick="window.location.href='monthly.html'" class="button-report">Monthly Report</button>
+</div>
+
+<script>
+// ====== Clock ======
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 50);
+updateClock();
+
+// ====== Days and tasks ======
+const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const daysContainer = document.getElementById('days-container');
+let weeklyDone = 0, weeklyTotal = 0;
+
+days.forEach(dayName => {
+  const dayDiv = document.createElement('div');
+  dayDiv.className = 'day';
+  dayDiv.innerHTML = `
+    <h2>${dayName} — <span class="daily-percent">0%</span></h2>
+    <div class="task"><span>Morning Routine</span><input type="checkbox" class="task-checkbox"></div>
+    <div class="task"><span>Programming / Study</span><input type="checkbox" class="task-checkbox"></div>
+    <div class="task"><span>Dutch Course</span><input type="checkbox" class="task-checkbox"></div>
+    <div class="progress-bar">0%</div>
+  `;
+  daysContainer.appendChild(dayDiv);
+
+  const checkboxes = dayDiv.querySelectorAll('.task-checkbox');
+  const dailyProgressBar = dayDiv.querySelector('.progress-bar');
+  const dailyPercentText = dayDiv.querySelector('.daily-percent');
+
+  checkboxes.forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      let done = [...checkboxes].filter(c=>c.checked).length;
+      let percent = Math.round(done/checkboxes.length*100);
+      dailyProgressBar.style.width = percent + '%';
+      dailyPercentText.textContent = percent + '%';
+
+      // update weekly
+      weeklyDone = document.querySelectorAll('.task-checkbox:checked').length;
+      weeklyTotal = document.querySelectorAll('.task-checkbox').length;
+      document.getElementById('weekly-progress').style.width = Math.round(weeklyDone/weeklyTotal*100) + '%';
+      document.getElementById('weekly-progress').textContent = Math.round(weeklyDone/weeklyTotal*100) + '%';
+    });
+  });
+});
+</script>
+
+</body>
+</html>
+
 
