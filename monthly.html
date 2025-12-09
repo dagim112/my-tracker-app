@@ -1,100 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Monthly Report</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Monthly Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <style>
-body { background-color:#111; color:#fff; font-family:Arial,sans-serif; margin:0; padding:20px; }
-h1 { text-align:center; margin-bottom:20px; }
-#digital-clock { text-align:center; font-family:monospace; font-size:28px; font-weight:bold; margin-bottom:20px; }
-#month-picker { display:block; margin:0 auto 20px auto; padding:10px; border-radius:6px; border:none; font-size:16px; }
-canvas { display:block; margin:20px auto; background:#222; border-radius:12px; }
-button.back { display:block; margin:20px auto; padding:10px 20px; background:#1976D2; border:none; border-radius:8px; color:#fff; cursor:pointer; }
+body{font-family:Arial,sans-serif;margin:0;padding:14px;background:#000;color:#fff;}
+h1{text-align:center;color:#0f4d0f;margin-bottom:16px;}
+.wrapper{max-width:700px;margin:0 auto;padding:12px;border-radius:12px;border:1px solid #0f4d0f;}
+.day-summary{margin:10px 0;padding:10px;background:#111;border-radius:12px;border:1px solid #0f4d0f;}
+.day-summary h2{margin:0 0 6px 0;color:#0f4d0f;}
+.day-summary .progress{background:#222;height:24px;border-radius:12px;overflow:hidden;text-align:center;color:#fff;font-weight:700;}
+canvas{max-width:250px;max-height:250px;margin:20px auto;display:block;}
 </style>
 </head>
 <body>
 
-<h1>Monthly Report</h1>
-<div id="digital-clock"></div>
+<h1>Monthly Overview</h1>
 
-<input type="month" id="month-picker">
+<div class="wrapper">
+  <!-- Weekly summaries -->
+</div>
 
-<canvas id="monthlyChart" width="300" height="300"></canvas>
-
-<button class="back" onclick="window.location.href='weekly.html'">Back to Weekly Tracker</button>
+<h2 style="text-align:center;margin-top:24px;">Monthly Completion Pie</h2>
+<canvas id="monthly-chart"></canvas>
 
 <script>
-// ====== Clock ======
-function updateClock(){
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  const ms = String(now.getMilliseconds()).padStart(3,'0');
-  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
-}
-setInterval(updateClock, 50);
-updateClock();
+// ---------------- DAYS ----------------
+const days = ['mon','tue','wed','thu','fri','sat','sun'];
+const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const wrapper = document.querySelector('.wrapper');
 
-// ====== Helpers ======
-function formatDate(d){ // yyyy-mm-dd
-  const dt = new Date(d);
-  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-}
-
-function getMonthRange(monthStr){
-  const [y,m] = monthStr.split('-').map(Number);
-  const start = new Date(y, m-1, 1);
-  const end = new Date(y, m, 0);
-  return {start: formatDate(start), end: formatDate(end)};
-}
-
-// ====== Chart ======
-let monthlyChart;
-function renderChart(completed, remaining){
-  const ctx = document.getElementById('monthlyChart').getContext('2d');
-  if(monthlyChart){
-    monthlyChart.data.datasets[0].data = [completed, remaining];
-    monthlyChart.update();
-  } else {
-    monthlyChart = new Chart(ctx, {
-      type:'doughnut',
-      data:{
-        labels:['Completed','Remaining'],
-        datasets:[{data:[completed, remaining], backgroundColor:['#4CAF50','#e0e0e0']}]
-      },
-      options:{
-        plugins:{
-          legend:{display:true, labels:{color:'#fff'}},
-          datalabels:{
-            formatter:(v,ctx)=>{
-              const t = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-              return Math.round((v/t)*100)+'%';
-            },
-            color:'#fff'
-          }
-        }
-      },
-      plugins:[ChartDataLabels]
-    });
+// ---------------- LOAD DAILY PROGRESS ----------------
+function getDayProgress(day){
+  // Count all checkboxes for that day
+  let total = 0, done = 0;
+  for(let i=0;i<50;i++){ // max 50 checkboxes per day
+    const val = localStorage.getItem(`${day}-${i}`);
+    if(val===null) break;
+    total++;
+    if(val==='true') done++;
   }
+  const pct = total?Math.round(done/total*100):0;
+  return pct;
 }
 
-// ====== Compute monthly summary ======
-function computeMonthly(monthStr){
-  const {start,end} = getMonthRange(monthStr);
-  const archive = JSON.parse(localStorage.getItem('archive')) || [];
-  const filtered = archive.filter(a=>a.date>=start && a.date<=end);
+// ---------------- BUILD WEEKLY SUMMARIES ----------------
+let monthlyTotal=0, monthlyDone=0;
+days.forEach((day,idx)=>{
+  const pct = getDayProgress(day);
+  monthlyTotal+=100;
+  monthlyDone+=pct;
 
-  let totalUnits=0, doneUnits=0;
-  filtered.forEach(entry=>{
-    totalUnits += entry.tasks.length + entry.morning.length;
-    doneUnits += entry.tasks.filter(t=>t.checked).length + entry.morningCompleted;
-  });
-  const completed = doneUnits;
-  const remaining = Math.max(totalUnits-doneUnits,0);
-  return {completed, remaining}
+  const dayDiv = document.createElement('div');
+  dayDiv.className = 'day-summary';
+  dayDiv.innerHTML = `
+    <h2>${dayNames[idx]}</h2>
+    <div class="progress" style="width:${pct}%">${pct}%</div>
+  `;
+  wrapper.appendChild(dayDiv);
+});
+
+// ---------------- MONTHLY PIE ----------------
+const monthlyPct = Math.round(monthlyDone/days.length);
+const ctx = document.getElementById('monthly-chart').getContext('2d');
+new Chart(ctx,{
+  type:'doughnut',
+  data:{
+    labels:['Completed','Remaining'],
+    datasets:[{data:[monthlyPct,100-monthlyPct],backgroundColor:['#0f4d0f','#555'] }]
+  },
+  options:{plugins:{legend:{display:true,labels:{color:'#fff'}}}}
+});
+</script>
+
+</body>
+</html>
