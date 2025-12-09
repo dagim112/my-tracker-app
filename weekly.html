@@ -1,31 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Weekly Tracker</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:14px;background:#000;color:#fff;}
+h1{text-align:center;margin-bottom:16px;color:#0f4d0f;font-weight:700;}
+#weekly-progress-container{margin-bottom:12px;}
+#weekly-progress{width:0%;height:28px;background:#0f4d0f;color:#fff;text-align:center;line-height:28px;border-radius:14px;font-weight:700;}
+.wrapper{display:flex;flex-direction:column;gap:12px;}
+.day{background:#111;border-radius:12px;padding:12px;border:1px solid #0f4d0f;cursor:pointer;}
+.day h2{color:#0f4d0f;margin:0 0 4px;}
+.day .day-percent{font-weight:700;color:#fff;margin-bottom:4px;}
+.day-content{display:none;margin-top:8px;}
+.task{background:#222;margin:6px 0;padding:10px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;}
+.task input[type="checkbox"]{width:20px;height:20px;}
+.task:hover{background:#333;}
+.morning-subtasks{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.note-text{width:100%;min-height:60px;padding:8px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;}
+canvas{max-width:150px;max-height:150px;margin-top:6px;}
+</style>
 </head>
 <body>
 
-<h1>Weekly Tracker (Mon–Sun)</h1>
-
-<div id="digital-clock"></div>
+<h1>Weekly Overview (Mon–Sun)</h1>
 
 <!-- Weekly progress bar -->
-<div class="progress-container">
-  <div class="progress-bar" id="weekly-progress">0%</div>
+<div id="weekly-progress-container">
+  <div id="weekly-progress">0%</div>
 </div>
 
-<div class="days-container"></div>
+<div class="wrapper"></div>
 
-<!-- Top-right menu -->
-<div class="top-right">
-  <button onclick="window.location.href='monthly.html'">Monthly Report</button>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const daysData = ['mon','tue','wed','thu','fri','sat','sun'];
+const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const wrapper = document.querySelector('.wrapper');
 
-<script src="script.js"></script>
+function saveDayProgress(dayEl){
+  const key = dayEl.dataset.day;
+  dayEl.querySelectorAll('input[type="checkbox"]').forEach((cb,i)=>{
+    localStorage.setItem(`${key}-${i}`,cb.checked);
+  });
+}
+
+function loadDayProgress(dayEl){
+  const key = dayEl.dataset.day;
+  dayEl.querySelectorAll('input[type="checkbox"]').forEach((cb,i)=>{
+    const val = localStorage.getItem(`${key}-${i}`);
+    if(val==='true') cb.checked = true;
+  });
+}
+
+function calcDayPercent(dayEl){
+  const checkboxes = Array.from(dayEl.querySelectorAll('input[type="checkbox"]'));
+  const total = checkboxes.length;
+  const done = checkboxes.filter(cb=>cb.checked).length;
+  const percent = total ? Math.round(done/total*100) : 0;
+  const pctEl = dayEl.querySelector('.day-percent');
+  pctEl.textContent = percent+'%';
+  return percent;
+}
+
+function updateWeeklyPercent(){
+  const dayEls = document.querySelectorAll('.day');
+  let totalUnits=0, doneUnits=0;
+  dayEls.forEach(dayEl=>{
+    const checkboxes = Array.from(dayEl.querySelectorAll('input[type="checkbox"]'));
+    const done = checkboxes.filter(cb=>cb.checked).length;
+    totalUnits += checkboxes.length;
+    doneUnits += done;
+  });
+  const percent = totalUnits ? Math.round(doneUnits/totalUnits*100) : 0;
+  document.getElementById('weekly-progress').style.width = percent+'%';
+  document.getElementById('weekly-progress').textContent = percent+'%';
+}
+
+daysData.forEach((day,idx)=>{
+  const dayDiv = document.createElement('div');
+  dayDiv.className='day';
+  dayDiv.dataset.day = day;
+  dayDiv.innerHTML = `
+    <h2>${dayNames[idx]}</h2>
+    <div class="day-percent">0%</div>
+    <div class="day-content">
+      <div class="task morning">
+        🌞 Morning Routine:
+        <div class="morning-subtasks">
+          <label><input type="checkbox"> Drink Water</label>
+          <label><input type="checkbox"> Prayer / Meditation</label>
+          <label><input type="checkbox"> Exercise</label>
+          <label><input type="checkbox"> Reading / Learning</label>
+        </div>
+        <canvas id="chart-${day}"></canvas>
+      </div>
+      <div class="task">💻 Programming / Study <input type="checkbox"></div>
+      <div class="task">🇳🇱 Dutch Course <input type="checkbox"></div>
+      <div class="task">💻 Review & Light Coding <input type="checkbox"></div>
+      <textarea class="note-text" placeholder="Notes / Reason"></textarea>
+    </div>`;
+  wrapper.appendChild(dayDiv);
+
+  loadDayProgress(dayDiv);
+  calcDayPercent(dayDiv);
+  updateWeeklyPercent();
+
+  // Toggle day content
+  dayDiv.querySelector('h2').addEventListener('click',()=>{
+    const content = dayDiv.querySelector('.day-content');
+    content.style.display = content.style.display==='block'?'none':'block';
+  });
+
+  // On checkbox change
+  dayDiv.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      saveDayProgress(dayDiv);
+      calcDayPercent(dayDiv);
+      updateWeeklyPercent();
+      updateDayChart(dayDiv.dataset.day);
+    });
+  });
+});
+
+// Pie chart for morning routine
+const morningCharts = {};
+function updateDayChart(day){
+  const dayEl = document.querySelector(`.day[data-day="${day}"]`);
+  const checkboxes = Array.from(dayEl.querySelectorAll('.morning-subtasks input[type="checkbox"]'));
+  const done = checkboxes.filter(cb=>cb.checked).length;
+  const remaining = checkboxes.length - done;
+  const ctx = document.getElementById(`chart-${day}`).getContext('2d');
+  if(morningCharts[day]) morningCharts[day].destroy();
+  morningCharts[day] = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Done','Remaining'],
+      datasets:[{data:[done,remaining], backgroundColor:['#0f4d0f','#555'] }]
+    },
+    options:{plugins:{legend:{display:true,color:'#fff'}}}
+  });
+}
+
+// Initialize all morning charts
+daysData.forEach(day=>updateDayChart(day));
+</script>
 </body>
 </html>
