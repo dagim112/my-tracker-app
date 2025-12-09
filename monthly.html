@@ -2,14 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Monthly Report</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <style>
-body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 40px; }
-button { padding: 12px 20px; font-size: 20px; background: #2196F3; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+body { background-color:#111; color:#fff; font-family:Arial,sans-serif; margin:0; padding:20px; }
+h1 { text-align:center; margin-bottom:20px; }
+#digital-clock { text-align:center; font-family:monospace; font-size:28px; font-weight:bold; margin-bottom:20px; }
+#month-picker { display:block; margin:0 auto 20px auto; padding:10px; border-radius:6px; border:none; font-size:16px; }
+canvas { display:block; margin:20px auto; background:#222; border-radius:12px; }
+button.back { display:block; margin:20px auto; padding:10px 20px; background:#1976D2; border:none; border-radius:8px; color:#fff; cursor:pointer; }
 </style>
 </head>
 <body>
-<h1>Monthly Report Page</h1>
-<button onclick="window.location.href='weekly.html'">Back to Weekly Tracker</button>
-</body>
-</html>
+
+<h1>Monthly Report</h1>
+<div id="digital-clock"></div>
+
+<input type="month" id="month-picker">
+
+<canvas id="monthlyChart" width="300" height="300"></canvas>
+
+<button class="back" onclick="window.location.href='weekly.html'">Back to Weekly Tracker</button>
+
+<script>
+// ====== Clock ======
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 50);
+updateClock();
+
+// ====== Helpers ======
+function formatDate(d){ // yyyy-mm-dd
+  const dt = new Date(d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+function getMonthRange(monthStr){
+  const [y,m] = monthStr.split('-').map(Number);
+  const start = new Date(y, m-1, 1);
+  const end = new Date(y, m, 0);
+  return {start: formatDate(start), end: formatDate(end)};
+}
+
+// ====== Chart ======
+let monthlyChart;
+function renderChart(completed, remaining){
+  const ctx = document.getElementById('monthlyChart').getContext('2d');
+  if(monthlyChart){
+    monthlyChart.data.datasets[0].data = [completed, remaining];
+    monthlyChart.update();
+  } else {
+    monthlyChart = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:['Completed','Remaining'],
+        datasets:[{data:[completed, remaining], backgroundColor:['#4CAF50','#e0e0e0']}]
+      },
+      options:{
+        plugins:{
+          legend:{display:true, labels:{color:'#fff'}},
+          datalabels:{
+            formatter:(v,ctx)=>{
+              const t = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+              return Math.round((v/t)*100)+'%';
+            },
+            color:'#fff'
+          }
+        }
+      },
+      plugins:[ChartDataLabels]
+    });
+  }
+}
+
+// ====== Compute monthly summary ======
+function computeMonthly(monthStr){
+  const {start,end} = getMonthRange(monthStr);
+  const archive = JSON.parse(localStorage.getItem('archive')) || [];
+  const filtered = archive.filter(a=>a.date>=start && a.date<=end);
+
+  let totalUnits=0, doneUnits=0;
+  filtered.forEach(entry=>{
+    totalUnits += entry.tasks.length + entry.morning.length;
+    doneUnits += entry.tasks.filter(t=>t.checked).length + entry.morningCompleted;
+  });
+  const completed = doneUnits;
+  const remaining = Math.max(totalUnits-doneUnits,0);
+  return {completed, remaining}
