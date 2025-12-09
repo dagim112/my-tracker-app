@@ -1,189 +1,102 @@
-/* ----------------------------- */
-/* GENERAL BODY AND HEADINGS */
-/* ----------------------------- */
+/* =========================
+   General Page Styles
+========================= */
 body {
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
-  margin: 0;
-  padding: 10px;
-  color: #333;
+    background-color: #121212;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
-h1, header {
-  text-align: center;
-  font-size: 1.8em;
-  font-weight: bold;
-  margin-bottom: 20px;
+h1,h2,h3 {
+    color: #fff;
 }
 
-main {
-  padding: 20px;
+/* =========================
+   Landing Page Button
+========================= */
+.landing-btn {
+    display: block;
+    margin: 150px auto;
+    padding: 25px 60px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
 }
 
-/* ----------------------------- */
-/* DIGITAL CLOCK */
-/* ----------------------------- */
-#digital-clock {
-  display: block;
-  text-align: center;
-  font-size: 24px; /* medium size */
-  font-family: monospace;
-  font-weight: bold;
-  padding: 15px 20px;
-  margin: 10px auto;
-  background-color: #2196F3;
-  color: #fff;
-  border-radius: 25px;
-  width: fit-content;
+/* =========================
+   Days / Progress Bars
+========================= */
+.day {
+    border: 1px solid #333;
+    padding: 15px;
+    margin: 15px;
+    border-radius: 12px;
+    background-color: #1e1e1e;
 }
 
-/* ----------------------------- */
-/* TASKS */
-/* ----------------------------- */
-.task {
-  background: #fff;
-  margin: 5px 0;
-  padding: 12px 20px;
-  border-radius: 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
-}
-
-.task:hover {
-  transform: scale(1.03);
-  opacity: 0.9;
-}
-
-.task input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-}
-
-/* Pill-style task */
-.task.pill {
-  background: linear-gradient(90deg, #FFAFBD, #ffc3a0);
-}
-
-/* ----------------------------- */
-/* PROGRESS BARS */
-/* ----------------------------- */
-.progress-container, .day-progress-container {
-  background: #ddd;
-  border-radius: 20px;
-  overflow: hidden;
-  margin: 10px 0;
-  position: relative;
-}
-
-.progress-bar, .day-progress-bar {
-  height: 20px;
-  width: 0%;
-  background: #2196F3;
-  color: white;
-  text-align: center;
-  line-height: 20px;
-  font-weight: bold;
-  border-radius: 20px;
-  transition: width 0.3s, background 0.3s;
+.day-progress-container {
+    background-color: #333;
+    height: 24px;
+    border-radius: 12px;
+    margin: 10px 0;
 }
 
 .day-progress-bar {
-  height: 15px;
-  font-size: 12px;
-  line-height: 15px;
+    background-color: #007bff;
+    height: 100%;
+    width: 0%;
+    text-align: center;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
 }
 
-/* ----------------------------- */
-/* MORNING ROUTINE SUBTASKS */
-/* ----------------------------- */
-.morning-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 5px;
+/* =========================
+   Morning / Task Checkboxes
+========================= */
+.task {
+    margin: 10px 0;
 }
 
-.morning-subtasks {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
+.morning-container label, .task label {
+    display: block;
+    margin: 5px 0;
 }
 
-.morning-subtasks label {
-  margin-bottom: 5px;
-  cursor: pointer;
-}
-
-/* ----------------------------- */
-/* CHART CANVAS */
-/* ----------------------------- */
-canvas {
-  max-width: 150px;
-  max-height: 150px;
-  margin-left: 10px;
-}
-
-/* ----------------------------- */
-/* NOTES AREA */
-/* ----------------------------- */
-.day-notes {
-  margin-top: 10px;
-}
-
+/* =========================
+   Notes
+========================= */
 .note-text {
-  width: 100%;
-  min-height: 60px;
-  padding: 10px;
-  border-radius: 15px;
-  border: 1px solid #ccc;
-  resize: vertical;
-  font-size: 14px;
+    width: 100%;
+    height: 60px;
+    border-radius: 8px;
+    border: none;
+    padding: 8px;
+    margin-top: 5px;
 }
 
-/* ----------------------------- */
-/* START SOUND BUTTON */
-/* ----------------------------- */
-#start-sound {
-  display: block;
-  margin: 15px auto;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 25px;
-  background: #FFAFBD;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+/* =========================
+   Weekly Progress Bar
+========================= */
+#weekly-progress {
+    background-color: #007bff;
+    height: 28px;
+    width: 0%;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 14px;
+    color: white;
+    font-weight: bold;
 }
 
-#start-sound:hover {
-  background: #ffc3a0;
-  transform: scale(1.05);
-}
-.day-money {
-  margin-top: 10px;
-  padding: 10px;
-  background: #f7f7f7;
-  border-radius: 15px;
-}
-.expense-input, .expense-category {
-  padding: 5px;
-  margin-right: 5px;
-}
-.add-expense {
-  padding: 5px 10px;
-  border-radius: 10px;
-  background: #FFAFBD;
-  border: none;
-  cursor: pointer;
-}
-.expense-list {
-  margin-top: 5px;
-  list-style-type: disc;
-  padding-left: 20px;
-}
 
 
 
