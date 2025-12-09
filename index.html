@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Landing</title>
-<style>
-  body { background: #000; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-  button { background: #2196F3; color:#fff; font-size:32px; padding:20px 40px; border:none; border-radius:15px; cursor:pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <button onclick="window.location.href='weekly.html'">የዳግም መቁጠሪያ</button>
+    <button class="landing-btn" onclick="startTracker()">የዳግም መቁጠሪያ</button>
+
+    <script>
+        function startTracker() {
+            // Redirect to weekly.html
+            window.location.href = 'weekly.html';
+        }
+    </script>
 </body>
 </html>
