@@ -1,103 +1,237 @@
 /* =========================
-   General Page Styles
+   GENERAL STYLES
 ========================= */
 body {
-    background-color: #121212;
-    color: #fff;
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 14px;
+    background: #000; /* Dark background */
+    color: #fff;
+}
+h1, h2 {
+    text-align: center;
+    color: #0f4d0f; /* Dark green */
+    margin-bottom: 16px;
+    font-weight: 700;
 }
 
-h1,h2,h3 {
+/* ---------------- DIGITAL CLOCK ---------------- */
+#digital-clock {
+    text-align: center;
+    font-size: 24px;
+    font-family: monospace;
+    font-weight: 700;
+    padding: 10px 18px;
+    margin: 8px auto 16px auto;
+    background: #2196F3; /* Bright blue */
+    color: white;
+    border-radius: 18px;
+    width: fit-content;
+}
+
+/* ---------------- BUTTONS ---------------- */
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+button:hover {
+    opacity: 0.85;
+}
+.blue-btn {
+    background: #2196F3;
+    color: #fff;
+}
+.green-btn {
+    background: #0f4d0f;
     color: #fff;
 }
 
-/* =========================
-   Landing Page Button
-========================= */
-.landing-btn {
-    display: block;
-    margin: 150px auto;
-    padding: 25px 60px;
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-    background-color: #007bff;
-    border: none;
+/* ---------------- WRAPPERS ---------------- */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+}
+
+/* ---------------- DAY BOX ---------------- */
+.day, .day-summary {
+    background: #111;
     border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #0f4d0f;
     cursor: pointer;
-    text-align: center;
+    transition: 0.2s;
+}
+.day:hover, .day-summary:hover {
+    background: #222;
+}
+.day h2, .day-summary h2 {
+    margin: 0 0 8px 0;
 }
 
-/* =========================
-   Days / Progress Bars
-========================= */
-.day {
-    border: 1px solid #333;
-    padding: 15px;
-    margin: 15px;
-    border-radius: 12px;
-    background-color: #1e1e1e;
+/* ---------------- DAY CONTENT ---------------- */
+.day-content {
+    margin-top: 8px;
+    display: none;
 }
 
-.day-progress-container {
-    background-color: #333;
-    height: 24px;
-    border-radius: 12px;
-    margin: 10px 0;
-}
-
-.day-progress-bar {
-    background-color: #007bff;
-    height: 100%;
-    width: 0%;
-    text-align: center;
-    line-height: 24px;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-}
-
-/* =========================
-   Morning / Task Checkboxes
-========================= */
+/* ---------------- TASKS ---------------- */
 .task {
-    margin: 10px 0;
+    background: #222;
+    margin: 6px 0;
+    padding: 10px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.task input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+.task:hover {
+    background: #333;
 }
 
-.morning-container label, .task label {
-    display: block;
-    margin: 5px 0;
+/* ---------------- MORNING ROUTINE ---------------- */
+.morning-subtasks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
 }
 
-/* =========================
-   Notes
-========================= */
+/* ---------------- NOTES ---------------- */
 .note-text {
     width: 100%;
-    height: 60px;
-    border-radius: 8px;
-    border: none;
+    min-height: 60px;
     padding: 8px;
-    margin-top: 5px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    background: #111;
+    color: #fff;
+    margin-top: 8px;
+    resize: vertical;
 }
 
-/* =========================
-   Weekly Progress Bar
-========================= */
-#weekly-progress {
-    background-color: #007bff;
-    height: 28px;
-    width: 0%;
+/* ---------------- EXPENSES ---------------- */
+.day-money {
+    margin-top: 10px;
+    padding: 10px;
+    background: #111;
+    border: 1px solid #0f4d0f;
+    border-radius: 12px;
+}
+.expense-input, .expense-category {
+    padding: 6px;
+    margin-right: 6px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #111;
+    color: #fff;
+}
+.add-expense {
+    padding: 6px 10px;
+    background: #0f4d0f;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.expense-list {
+    margin-top: 6px;
+    padding-left: 20px;
+}
+
+/* ---------------- PROGRESS BARS ---------------- */
+.day-progress-container, .progress {
+    background: #222;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 24px;
+    margin-top: 6px;
+}
+.day-progress-bar, .progress {
+    height: 100%;
     text-align: center;
-    line-height: 28px;
-    border-radius: 14px;
-    color: white;
-    font-weight: bold;
+    line-height: 24px;
+    color: #fff;
+    font-weight: 700;
+    background: #0f4d0f;
+    transition: 0.3s;
 }
 
+/* ---------------- CHARTS ---------------- */
+canvas {
+    max-width: 250px;
+    max-height: 250px;
+    margin: 12px auto;
+    display: block;
+}
 
+/* ---------------- MODAL ---------------- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.modal .card {
+    background: #111;
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    max-height: 90vh;
+    overflow:auto;
+    width: 90%;
+    max-width: 800px;
+}
+.modal header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.modal button {
+    cursor: pointer;
+}
+.tab {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #222;
+    margin-right: 6px;
+    display: inline-block;
+    cursor: pointer;
+}
+.tab.active {
+    background: #0f4d0f;
+    color: #fff;
+}
 
+/* ---------------- TOP-RIGHT BUTTON ---------------- */
+.top-right {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 999;
+}
 
-
+/* ---------------- RESPONSIVE ---------------- */
+@media screen and (max-width: 600px){
+    .wrapper {
+        padding: 8px;
+    }
+    .task {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
