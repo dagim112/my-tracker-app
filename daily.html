@@ -1,28 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Daily Tracker</title>
-<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:14px;background:#000;color:#fff;}
+h1{text-align:center;color:#0f4d0f;margin-bottom:16px;}
+#digital-clock{text-align:center;font-size:24px;font-weight:700;margin-bottom:12px;color:#fff;}
+.wrapper{max-width:600px;margin:0 auto;background:#111;padding:12px;border-radius:12px;border:1px solid #0f4d0f;}
+.day-percent{font-weight:700;margin-bottom:6px;text-align:center;color:#fff;}
+.task{background:#222;margin:6px 0;padding:10px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;}
+.task input[type="checkbox"]{width:20px;height:20px;}
+.morning-subtasks{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+canvas{max-width:250px;max-height:250px;margin:12px auto;display:block;}
+.note-text{width:100%;min-height:60px;padding:8px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;}
+</style>
 </head>
 <body>
 
-<h1>Daily Tracker</h1>
+<h1 id="day-title">Daily Tracker</h1>
 <div id="digital-clock"></div>
 
-<div id="day-content"></div>
+<div class="wrapper">
+  <div class="day-percent">0%</div>
+  <div class="day-content">
+    <div class="task morning">
+      🌞 Morning Routine:
+      <div class="morning-subtasks">
+        <label><input type="checkbox"> Drink Water</label>
+        <label><input type="checkbox"> Prayer / Meditation</label>
+        <label><input type="checkbox"> Exercise</label>
+        <label><input type="checkbox"> Reading / Learning</label>
+      </div>
+      <canvas id="morning-chart"></canvas>
+    </div>
+    <div class="task">💻 Programming / Study <input type="checkbox"></div>
+    <div class="task">🇳🇱 Dutch Course <input type="checkbox"></div>
+    <div class="task">💻 Review & Light Coding <input type="checkbox"></div>
+    <textarea class="note-text" placeholder="Notes / Reason"></textarea>
+  </div>
+</div>
 
-<button onclick="window.location.href='weekly.html'">Back to Weekly</button>
-
-<script src="script.js"></script>
 <script>
-// Get the day from URL query
-const params = new URLSearchParams(window.location.search);
-const day = params.get('day') || 'mon';
-document.getElementById('day-content').innerHTML = `<h2>${day.toUpperCase()} Tasks</h2>`;
+// ---------------- DIGITAL CLOCK ----------------
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock,50);
+updateClock();
 
-// You can load the saved tasks, notes, expenses from localStorage
+// ---------------- DAY SELECTION ----------------
+const urlParams = new URLSearchParams(window.location.search);
+const dayParam = urlParams.get('day') || 'mon';
+const dayNames = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+document.getElementById('day-title').textContent = `${dayNames[dayParam]} Tracker`;
+
+// ---------------- LOCALSTORAGE ----------------
+const wrapper = document.querySelector('.wrapper');
+const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+
+function saveProgress(){
+  checkboxes.forEach((cb,i)=>{
+    localStorage.setItem(`${dayParam}-${i}`, cb.checked);
+  });
+}
+
+function loadProgress(){
+  checkboxes.forEach((cb,i)=>{
+    const val = localStorage.getItem(`${dayParam}-${i}`);
+    if(val==='true') cb.checked = true;
+  });
+}
+
+// ---------------- CALCULATE PERCENT ----------------
+function updatePercent(){
+  const total = checkboxes.length;
+  const done = Array.from(checkboxes).filter(cb=>cb.checked).length;
+  const pct = total?Math.round(done/total*100):0;
+  wrapper.querySelector('.day-percent').textContent = pct+'%';
+  updateMorningChart();
+}
+
+// ---------------- PIE CHART ----------------
+let morningChart;
+function updateMorningChart(){
+  const morningCheckboxes = wrapper.querySelectorAll('.morning-subtasks input[type="checkbox"]');
+  const done = Array.from(morningCheckboxes).filter(cb=>cb.checked).length;
+  const remaining = morningCheckboxes.length - done;
+  const ctx = document.getElementById('morning-chart').getContext('2d');
+  if(morningChart) morningChart.destroy();
+  morningChart = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Done','Remaining'],
+      datasets:[{data:[done,remaining],backgroundColor:['#0f4d0f','#555'] }]
+    },
+    options:{plugins:{legend:{display:true,labels:{color:'#fff'}}}}
+  });
+}
+
+// ---------------- INITIALIZE ----------------
+loadProgress();
+updatePercent();
+
+// ---------------- EVENTS ----------------
+checkboxes.forEach(cb=>{
+  cb.addEventListener('change',()=>{
+    saveProgress();
+    updatePercent();
+  });
+});
 </script>
 </body>
 </html>
+
