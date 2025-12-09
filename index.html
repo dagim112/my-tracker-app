@@ -1,175 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study & Programming Tracker (Mon–Fri) + Money Tracker</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Study & Programming Tracker (Mon–Sun) + Reports</title>
 
-<style>
-/* GENERAL */
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
-  padding: 10px;
-  margin: 0;
-}
-h1 { text-align: center; margin-bottom: 20px; }
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
 
-/* DIGITAL CLOCK */
-#digital-clock {
-  text-align: center;
-  font-size: 26px;
-  font-family: monospace;
-  font-weight: bold;
-  padding: 12px 20px;
-  margin: 10px auto;
-  width: fit-content;
-  background: #2196F3;
-  color: white;
-  border-radius: 20px;
-}
-
-/* PROGRESS BARS */
-.progress-container, .day-progress-container {
-  margin: 10px 0;
-  background: #ddd;
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
-}
-.progress-bar, .day-progress-bar {
-  height: 20px;
-  width: 0%;
-  background: #2196F3;
-  color: white;
-  text-align: center;
-  line-height: 20px;
-  font-weight: bold;
-  border-radius: 20px;
-  transition: width 0.3s;
-}
-.day-progress-bar {
-  height: 15px; 
-  font-size: 12px; 
-  line-height: 15px;
-}
-
-/* TASKS */
-.task {
-  background: #fff;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 50px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: transform 0.2s;
-}
-.task:hover { transform: scale(1.03); }
-.morning-container {
-  display: none;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 5px;
-}
-.morning-subtasks { 
-  display: flex; 
-  flex-direction: column; 
-  font-size: 14px; 
-}
-canvas { 
-  max-width: 150px; 
-  max-height: 150px; 
-}
-
-/* NOTES */
-.day-notes { margin-top: 10px; }
-.note-text {
-  width: 100%;
-  min-height: 60px;
-  padding: 10px;
-  border-radius: 15px;
-  border: 1px solid #ccc;
-  resize: vertical;
-  font-size: 14px;
-}
-
-/* REMINDER BUTTON */
-#start-sound {
-  display: block;
-  margin: 15px auto;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 25px;
-  background: #FFAFBD;
-  border: none;
-  cursor: pointer;
-}
-
-/* MONEY TRACKER */
-.day-money {
-  margin-top: 10px;
-  padding: 10px;
-  background: #f7f7f7;
-  border-radius: 15px;
-}
-.expense-input, .expense-category {
-  padding: 5px;
-  margin-right: 5px;
-}
-.add-expense {
-  padding: 5px 10px;
-  border-radius: 10px;
-  background: #FFAFBD;
-  border: none;
-  cursor: pointer;
-}
-.expense-list {
-  margin-top: 5px;
-  list-style-type: disc;
-  padding-left: 20px;
-}
-</style>
-
-</head>
-<body>
-
-<h1> የዳግም መቁጠሪያ </h1>
-
-<!-- DIGITAL CLOCK -->
-<div id="digital-clock"></div>
-
-<!-- WEEKLY PROGRESS -->
-<div class="progress-container">
-  <div class="progress-bar" id="weekly-progress">0%</div>
-</div>
-
-<!-- AUDIO REMINDER -->
-<button id="start-sound">Start Hourly Voice Reminder</button>
-<audio id="my-sound" src="your-voice.mp3" preload="auto"></audio>
-
-<div class="days-container"></div>
-
+<!-- Chart.js and plugins -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
+<!-- html2canvas + jsPDF for PDF export -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<style>
+/* ---------- GENERAL ---------- */
+:root{
+  --bg1: #FFDEE9;
+  --bg2: #B5FFFC;
+  --accent: #8ED6FF;
+  --btn: #72C7FF; /* light-blue */
+  --btn-hover: #5ab8ff;
+  --shadow: 0 6px 18px rgba(0,0,0,0.12);
+  --glass: rgba(255,255,255,0.7);
+}
+*{box-sizing:border-box}
+body{
+  font-family: Inter, Arial, sans-serif;
+  margin:0;
+  padding:14px;
+  background: linear-gradient(135deg,var(--bg1),var(--bg2));
+  -webkit-font-smoothing:antialiased;
+  color:#111;
+}
+h1{text-align:center;margin:6px 0 16px;font-weight:700}
+
+/* DIGITAL CLOCK */
+#digital-clock{
+  text-align:center;
+  font-size:24px;
+  font-family: monospace;
+  font-weight:700;
+  padding:10px 18px;
+  margin:8px auto;
+  background:#2196F3;color:white;border-radius:18px;width:fit-content;
+  box-shadow:var(--shadow);
+}
+
+/* CONTAINER */
+.wrapper{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  padding:6px;
+}
+
+/* MAIN COLUMN */
+.main{
+  flex:1;
+  min-width:300px;
+}
+
+/* DAY CARD */
+.day{
+  background:var(--glass);
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+.day h2{margin:0 0 8px}
+.progress-container{margin:8px 0;background:#ddd;border-radius:20px;overflow:hidden}
+.progress-bar{height:20px;width:0;background:#2196F3;color:#fff;text-align:center;line-height:20px;font-weight:700;border-radius:20px;transition:width .3s}
+
+/* day progress smaller */
+.day-progress-container{margin:8px 0;background:#eee;border-radius:16px;overflow:hidden}
+.day-progress-bar{height:15px;width:0;background:#2196F3;color:#fff;text-align:center;line-height:15px;font-weight:700;border-radius:16px}
+
+/* TASKS */
+.task{background:#fff;margin:6px 0;padding:10px;border-radius:40px;display:flex;justify-content:space-between;align-items:center}
+.task:hover{transform:scale(1.01)}
+.morning-container{display:none;justify-content:space-between;align-items:flex-start;margin-top:10px}
+.morning-subtasks{display:flex;flex-direction:column;font-size:14px;gap:6px}
+canvas{max-width:150px;max-height:150px}
+
+/* NOTES */
+.day-notes{margin-top:10px}
+.note-text{width:100%;min-height:60px;padding:10px;border-radius:12px;border:1px solid #ccc;resize:vertical}
+
+/* MONEY TRACKER */
+.day-money{margin-top:10px;padding:10px;background:#f7f7f7;border-radius:10px}
+.expense-input,.expense-category{padding:6px;margin-right:6px}
+.add-expense{padding:6px 10px;border-radius:8px;background:linear-gradient(180deg,#FFAFBD,#FF7EB6);border:none;cursor:pointer}
+.expense-list{margin-top:8px;padding-left:20px}
+
+/* SAVE SNAPSHOT */
+.save-snap{margin-top:8px;padding:8px 10px;border-radius:10px;background:linear-gradient(180deg,#8EF5B8,#4ECC7F);border:none;cursor:pointer}
+
+/* ---------- RIGHT TOP BTN (Option C) ---------- */
+.top-right{
+  position:fixed;
+  top:18px;
+  right:18px;
+  z-index:9999;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.report-btn{
+  background:linear-gradient(135deg,var(--btn),var(--btn-hover));
+  border:none;
+  color:#fff;
+  padding:12px 16px;
+  border-radius:999px;
+  font-weight:700;
+  box-shadow:0 10px 25px rgba(50,150,255,0.25);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transform-origin:center;
+  animation: float 3s ease-in-out infinite;
+}
+.report-btn .dot{width:10px;height:10px;background:white;border-radius:50%;box-shadow:0 0 8px rgba(255,255,255,0.8)}
+.report-btn:hover{transform:translateY(-6px) scale(1.02)}
+@keyframes float{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+  100%{transform:translateY(0)}
+}
+/* dropdown arrow */
+.chev{border:solid white;border-width:0 2px 2px 0;display:inline-block;padding:4px;transform:rotate(45deg);margin-left:6px}
+
+/* ---------- DROPDOWN (visual) ---------- */
+.dropdown-panel{
+  display:none;
+  position:fixed;
+  top:62px;
+  right:18px;
+  width:320px;
+  background:white;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:10px;
+  z-index:9998;
+}
+
+/* ---------- MODAL REPORT (Option 1) ---------- */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background: rgba(0,0,0,0.35);
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal .card{
+  width:min(920px,98%);
+  max-height:90vh;
+  overflow:auto;
+  background:linear-gradient(180deg, #ffffff, #f7fbff);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.3);
+}
+.modal .card header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.modal .tabs{display:flex;gap:8px}
+.tab{padding:8px 12px;border-radius:10px;background:rgba(33,150,243,0.08);cursor:pointer}
+.tab.active{background:linear-gradient(90deg,#72C7FF,#5ab8ff);color:#fff}
+
+/* report body */
+.report-body{display:flex;gap:12px}
+.report-left{flex:1;min-width:220px}
+.report-right{width:320px;background:#fff;padding:10px;border-radius:10px;box-shadow:var(--shadow);}
+
+/* report chart */
+.report-summary{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px}
+.big-number{font-size:28px;font-weight:800}
+
+/* remaining tasks list */
+.rem-list{max-height:360px;overflow:auto;padding-left:12px}
+
+/* controls */
+.controls{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.btn-action{padding:8px 12px;border-radius:10px;border:none;cursor:pointer}
+.btn-download{background:#4CAF50;color:white}
+.btn-email{background:#2196F3;color:white}
+
+/* search results */
+.archive-list{max-height:220px;overflow:auto;padding-left:12px;margin-top:8px}
+
+/* responsive */
+@media (max-width:900px){
+  .report-right{display:none}
+  .dropdown-panel{width:92%}
+  .report-body{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<h1>የዳግም መቁጠሪያ (Mon–Sun)</h1>
+
+<div id="digital-clock"></div>
+
+<div class="wrapper">
+  <div class="main">
+    <!-- Weekly progress -->
+    <div class="progress-container">
+      <div class="progress-bar" id="weekly-progress">0%</div>
+    </div>
+
+    <div class="days-container"></div>
+  </div>
+</div>
+
+<!-- top-right animated button (Option C) -->
+<div class="top-right">
+  <button id="report-btn" class="report-btn" title="Reports">
+    Reports
+    <span class="dot"></span>
+    <i class="chev"></i>
+  </button>
+  <div id="dropdown-panel" class="dropdown-panel">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label style="font-weight:700">Open Reports</label>
+      <button id="open-modal" class="btn-action" style="background:linear-gradient(90deg,#72C7FF,#5ab8ff);color:white;padding:10px;border-radius:10px;border:none;cursor:pointer">Open Report Modal</button>
+      <hr />
+      <label style="font-weight:700">Archive Search</label>
+      <div style="display:flex;gap:8px">
+        <input id="search-date" type="date" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc" />
+        <button id="search-btn" class="btn-action" style="background:#eee">Search</button>
+      </div>
+      <div id="dropdown-search-results" style="margin-top:8px;max-height:200px;overflow:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal (Option 1) -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="card">
+    <header>
+      <div style="display:flex;flex-direction:column">
+        <strong>Reports — Daily / Weekly / Monthly</strong>
+        <small style="color:#666">Select type and a date, then click Generate</small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="close-modal" class="btn-action" style="background:#fff;border:1px solid #ddd">Close</button>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div class="tabs">
+        <div class="tab active" data-type="daily">Daily</div>
+        <div class="tab" data-type="weekly">Weekly</div>
+        <div class="tab" data-type="monthly">Monthly</div>
+      </div>
+
+      <input id="report-date" type="date" style="padding:8px;border-radius:8px;border:1px solid #ccc" />
+      <button id="generate-report" class="btn-action" style="background:#eee">Generate</button>
+      <div style="flex:1"></div>
+    </div>
+
+    <div class="report-body">
+      <div class="report-left">
+        <div class="report-summary">
+          <canvas id="reportChart" width="220" height="220"></canvas>
+          <div class="big-number" id="overall-percent">0%</div>
+          <div id="report-subtitle" style="color:#555">Completed vs Remaining</div>
+        </div>
+
+        <div>
+          <strong>Remaining Tasks</strong>
+          <div class="rem-list" id="remaining-list"></div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="download-pdf" class="btn-action btn-download">Download PDF</button>
+          <button id="send-email" class="btn-action btn-email">Send via Email</button>
+          <button id="view-archives" class="btn-action" style="background:#f0f0f0">View Archives</button>
+        </div>
+
+        <hr style="margin:12px 0" />
+        <div>
+          <strong>Archive Results (by chosen date)</strong>
+          <div id="archive-results" class="archive-list"></div>
+        </div>
+      </div>
+
+      <div class="report-right">
+        <strong>Report Details</strong>
+        <div style="margin-top:8px;color:#444">
+          <div><strong>Type:</strong> <span id="detail-type">Daily</span></div>
+          <div><strong>Date:</strong> <span id="detail-date">-</span></div>
+          <div style="margin-top:8px"><strong>Total Completed:</strong> <span id="detail-completed">0</span></div>
+          <div><strong>Total Remaining:</strong> <span id="detail-remaining">0</span></div>
+
+          <hr />
+          <strong>Search/Archive</strong>
+          <div style="margin-top:8px">
+            <input id="side-search-date" type="date" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc" />
+            <button id="side-search-btn" class="btn-action" style="width:100%;margin-top:8px;background:#eee">Search</button>
+            <div id="side-search-results" class="archive-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
-/* ============================== */
-/* CREATE DAY SECTIONS */
-/* ============================== */
-const daysData = ['mon','tue','wed','thu','fri'];
-const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+/* ============================
+   Utility & Initial Data
+   ============================ */
+const daysData = ['mon','tue','wed','thu','fri','sat','sun'];
+const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const container = document.querySelector('.days-container');
 const morningCharts = {};
 
+/* Helper: format date yyyy-mm-dd */
+function formatDate(d = new Date()){
+  const dt = new Date(d);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const day = String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+/* Helper: startOfWeek (Mon) and endOfWeek (Sun) for a given date */
+function weekRange(dateStr){
+  const d = new Date(dateStr);
+  const day = (d.getDay() + 6) % 7; // Mon=0..Sun=6
+  const monday = new Date(d); monday.setDate(d.getDate() - day);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  return {start: formatDate(monday), end: formatDate(sunday)};
+}
+
+/* Helper: month start/end */
+function monthRange(dateStr){
+  const d = new Date(dateStr);
+  const start = new Date(d.getFullYear(), d.getMonth(), 1);
+  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  return {start: formatDate(start), end: formatDate(end)};
+}
+
+/* ============================
+   Build day sections (Mon-Sun)
+   ============================ */
 daysData.forEach((day, index) => {
   const dayDiv = document.createElement('div');
-  dayDiv.className='day';
+  dayDiv.className = 'day';
   dayDiv.dataset.day = day;
-
   dayDiv.innerHTML = `
     <h2>${dayNames[index]}</h2>
 
@@ -178,7 +365,7 @@ daysData.forEach((day, index) => {
     </div>
 
     <div class="task morning">
-      <span class="morning-title">🌞 Morning Routine (6:00–8:00)</span>
+      <span class="morning-title" style="font-weight:700;cursor:pointer">🌞 Morning Routine (6:00–8:00) — click to open</span>
       <div class="morning-container">
         <div class="morning-subtasks">
           <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
@@ -202,7 +389,6 @@ daysData.forEach((day, index) => {
       <textarea class="note-text"></textarea>
     </div>
 
-    <!-- MONEY TRACKER -->
     <div class="day-money">
       <label>💰 Daily Expenses:</label>
       <input type="number" class="expense-input" placeholder="Amount spent (€)">
@@ -217,15 +403,19 @@ daysData.forEach((day, index) => {
 
       <ul class="expense-list"></ul>
       <div>Total: €<span class="expense-total">0</span></div>
+
+      <!-- Save snapshot -->
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <input type="date" class="snapshot-date" value="${formatDate()}" style="flex:1;padding:6px;border-radius:8px;border:1px solid #ccc" />
+        <button class="save-snap">Save Snapshot</button>
+      </div>
+      <small style="display:block;margin-top:6px;color:#666">Snapshots are stored locally and searchable by date.</small>
     </div>
   `;
-
   container.appendChild(dayDiv);
 });
 
-/* ============================== */
-/* TOGGLE MORNING SECTION */
-/* ============================== */
+/* ============= Toggle morning ============= */
 document.addEventListener('click', e => {
   if (e.target.classList.contains('morning-title')) {
     const box = e.target.nextElementSibling;
@@ -233,45 +423,58 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ============================== */
-/* SAVE CHECKBOX STATES */
-/* ============================== */
-function saveState(){
-  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
-    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
-    localStorage.setItem(key, cb.checked);
+/* ============= Persist checkbox states & notes ============= */
+/* We'll keep daily template state keyed by template-day to preserve weekly template (mon..sun)
+   Snapshots will capture full state and be stored under archive keyed by date + dayName */
+function saveTemplateState(){
+  document.querySelectorAll('.day').forEach(day=>{
+    const keyPrefix = 'tmpl-' + day.dataset.day;
+    // morning
+    day.querySelectorAll('.morning-checkbox').forEach((cb,i)=>{
+      localStorage.setItem(keyPrefix + '-mor-' + i, cb.checked);
+    });
+    // tasks
+    day.querySelectorAll('.task-checkbox').forEach((cb,i)=>{
+      localStorage.setItem(keyPrefix + '-task-' + i, cb.checked);
+    });
+    // notes
+    const note = day.querySelector('.note-text')?.value || '';
+    localStorage.setItem(keyPrefix + '-note', note);
+    // expenses - keep as array
+    const dayKey = 'money-' + day.dataset.day;
+    // expenses handled separately in expense functions
   });
 }
 
-function loadState(){
-  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
-    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
-    if (localStorage.getItem(key) === 'true') cb.checked = true;
+function loadTemplateState(){
+  document.querySelectorAll('.day').forEach(day=>{
+    const keyPrefix = 'tmpl-' + day.dataset.day;
+    day.querySelectorAll('.morning-checkbox').forEach((cb,i)=>{
+      if (localStorage.getItem(keyPrefix + '-mor-' + i) === 'true') cb.checked = true;
+    });
+    day.querySelectorAll('.task-checkbox').forEach((cb,i)=>{
+      if (localStorage.getItem(keyPrefix + '-task-' + i) === 'true') cb.checked = true;
+    });
+    const note = localStorage.getItem(keyPrefix + '-note');
+    if (note) day.querySelector('.note-text').value = note;
   });
 }
 
-/* ============================== */
-/* SAVE NOTES */
-/* ============================== */
-document.addEventListener('input', e => {
-  if (e.target.classList.contains('note-text')) {
-    const key = 'note-' + e.target.closest('.day').dataset.day;
-    localStorage.setItem(key, e.target.value);
+/* Save whenever checkboxes or notes change */
+document.addEventListener('change', e=>{
+  if (e.target.type === 'checkbox') {
+    saveTemplateState();
+    updateProgress();
   }
 });
-
-document.querySelectorAll('.note-text').forEach(note => {
-  const key = 'note-' + note.closest('.day').dataset.day;
-  const saved = localStorage.getItem(key);
-  if (saved) note.value = saved;
+document.addEventListener('input', e=>{
+  if (e.target.classList.contains('note-text')) saveTemplateState();
 });
 
-/* ============================== */
-/* CHARTS */
-/* ============================== */
+/* ============= Chart setup for each morning ============= */
 document.querySelectorAll('.day').forEach(day => {
   const ctx = day.querySelector('canvas').getContext('2d');
-  morningCharts[day.dataset.day] = new Chart(ctx,{
+  morningCharts[day.dataset.day] = new Chart(ctx, {
     type:'doughnut',
     data:{
       labels:['Completed','Remaining'],
@@ -294,9 +497,7 @@ document.querySelectorAll('.day').forEach(day => {
   });
 });
 
-/* ============================== */
-/* UPDATE PROGRESS */
-/* ============================== */
+/* ============= Update charts & progress ============= */
 function updateMorningChart(day){
   const chart = morningCharts[day.dataset.day];
   const boxes = day.querySelectorAll('.morning-checkbox');
@@ -308,14 +509,12 @@ function updateMorningChart(day){
 
 function updateProgress(){
   let total = 0, done = 0;
-
   document.querySelectorAll('.day').forEach(day => {
-    let morningPercent = updateMorningChart(day);
-
+    let morningPercent = updateMorningChart(day); // fraction
     const tasks = day.querySelectorAll('.task-checkbox');
     const taskDone = [...tasks].filter(cb => cb.checked).length;
 
-    const dayTotal = 1 + tasks.length;  
+    const dayTotal = 1 + tasks.length;  // morning counts as 1 unit plus each task
     const dayDone = morningPercent + taskDone;
 
     total += dayTotal;
@@ -333,45 +532,11 @@ function updateProgress(){
   weeklyBar.innerText = weekly + '%';
 }
 
-/* CHECKBOX LISTENER */
-document.addEventListener('change', e => {
-  if (e.target.type === 'checkbox') {
-    saveState();
-    updateProgress();
-  }
-});
-
-/* INITIALIZE */
-loadState();
+/* Initialize template state */
+loadTemplateState();
 updateProgress();
 
-/* ============================== */
-/* HOURLY REMINDER */
-/* ============================== */
-const audio = document.getElementById('my-sound');
-document.getElementById('start-sound').addEventListener('click', () => {
-  audio.play();
-  setInterval(() => audio.play(), 3600000);
-  alert("Hourly reminder started!");
-});
-
-/* ============================== */
-/* DIGITAL CLOCK */
-/* ============================== */
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  const ms = String(now.getMilliseconds()).padStart(3,'0');
-  document.getElementById("digital-clock").textContent = `${h}:${m}:${s}.${ms}`;
-}
-setInterval(updateClock, 16);
-updateClock();
-
-/* ============================== */
-/* DAILY MONEY TRACKER */
-/* ============================== */
+/* ============= Expenses (per template day) ============= */
 document.querySelectorAll('.day').forEach(day => {
   const addBtn = day.querySelector('.add-expense');
   const input = day.querySelector('.expense-input');
@@ -380,20 +545,18 @@ document.querySelectorAll('.day').forEach(day => {
   const totalSpan = day.querySelector('.expense-total');
   const dayKey = 'money-' + day.dataset.day;
 
-  // Load saved expenses
   let expenses = JSON.parse(localStorage.getItem(dayKey)) || [];
-  function renderExpenses() {
+
+  function renderExpenses(){
     list.innerHTML = '';
     let total = 0;
-    expenses.forEach((e, i) => {
+    expenses.forEach((e,i)=>{
       const li = document.createElement('li');
-      li.textContent = `${e.category}: €${e.amount}`;
+      li.textContent = `${e.category}: €${e.amount.toFixed(2)}`;
       li.style.cursor = 'pointer';
-      li.title = "Click to remove";
-      li.addEventListener('click', () => {
-        expenses.splice(i,1);
-        saveExpenses();
-        renderExpenses();
+      li.title = 'Click to remove';
+      li.addEventListener('click', ()=>{
+        expenses.splice(i,1); saveExpenses(); renderExpenses();
       });
       list.appendChild(li);
       total += parseFloat(e.amount);
@@ -401,14 +564,14 @@ document.querySelectorAll('.day').forEach(day => {
     totalSpan.textContent = total.toFixed(2);
   }
 
-  function saveExpenses() {
+  function saveExpenses(){
     localStorage.setItem(dayKey, JSON.stringify(expenses));
   }
 
-  addBtn.addEventListener('click', () => {
+  addBtn.addEventListener('click', ()=>{
     const amount = parseFloat(input.value);
     const cat = category.value;
-    if (!isNaN(amount) && amount > 0) {
+    if (!isNaN(amount) && amount > 0){
       expenses.push({amount, category: cat});
       saveExpenses();
       renderExpenses();
@@ -419,11 +582,345 @@ document.querySelectorAll('.day').forEach(day => {
   renderExpenses();
 });
 
-/* SERVICE WORKER */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
-</script>
+/* ============= Snapshots / Archive =============
+   When user clicks Save Snapshot: capture current day template's
+   state and save to archive under key 'archive' as an array of entries.
+   Each entry: {date:'YYYY-MM-DD', templateDay:'mon', tasks:[], morningCompleted, notes, expenses:[], timestamp}
+*/
+function collectDaySnapshot(dayElement, snapshotDate){
+  const morningBoxes = [...dayElement.querySelectorAll('.morning-checkbox')];
+  const morningCompleted = morningBoxes.filter(cb => cb.checked).length;
+  const morningList = morningBoxes.map(cb => ({label: cb.parentElement.innerText.trim(), checked: cb.checked}));
+  const tasksBoxes = [...dayElement.querySelectorAll('.task')]
+    .map(t => {
+      const label = t.childNodes[0].textContent.trim();
+      const cb = t.querySelector('.task-checkbox');
+      return {label, checked: !!cb && cb.checked};
+    });
+  const note = dayElement.querySelector('.note-text')?.value || '';
+  const expenses = JSON.parse(localStorage.getItem('money-' + dayElement.dataset.day)) || [];
 
+  return {
+    date: snapshotDate,
+    templateDay: dayElement.dataset.day,
+    morning: morningList,
+    morningCompleted,
+    tasks: tasksBoxes,
+    note,
+    expenses,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function saveSnapshotToArchive(entry){
+  const key = 'archive';
+  const arr = JSON.parse(localStorage.getItem(key)) || [];
+  arr.push(entry);
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+/* Hook save-snap buttons */
+document.querySelectorAll('.save-snap').forEach((btn, idx) => {
+  btn.addEventListener('click', (ev) => {
+    const dayEl = ev.target.closest('.day');
+    const dateInput = dayEl.querySelector('.snapshot-date').value || formatDate();
+    const snapshot = collectDaySnapshot(dayEl, dateInput);
+    saveSnapshotToArchive(snapshot);
+    alert('Snapshot saved for ' + snapshot.date + ' (' + dayEl.dataset.day + ')');
+  });
+});
+
+/* ============= Archive search / display ============= */
+function searchArchiveByDate(dateStr){
+  const arr = JSON.parse(localStorage.getItem('archive')) || [];
+  return arr.filter(a => a.date === dateStr);
+}
+
+function renderArchiveResults(array, containerEl){
+  containerEl.innerHTML = '';
+  if (!array.length){ containerEl.innerHTML = '<div style="color:#666">No snapshots for this date</div>'; return; }
+  array.forEach((a, i) => {
+    const div = document.createElement('div');
+    div.style.borderBottom = '1px solid #eee';
+    div.style.padding = '8px 0';
+    div.innerHTML = `<div style="font-weight:700">${a.templateDay.toUpperCase()} — ${a.date}</div>
+      <div style="font-size:13px;color:#444">Morning done: ${a.morningCompleted}/${a.morning.length} • Tasks done: ${a.tasks.filter(t=>t.checked).length}/${a.tasks.length}</div>
+      <div style="font-size:13px;color:#333;margin-top:6px;"><em>Note:</em> ${a.note ? a.note : '<span style="color:#999">none</span>'}</div>
+      <div style="font-size:13px;margin-top:6px;"><strong>Expenses:</strong> ${a.expenses.length ? a.expenses.map(e=>e.category+': €'+Number(e.amount).toFixed(2)).join(', ') : 'none'}</div>
+      <button data-index="${i}" class="view-arch-btn" style="margin-top:6px;padding:6px;border-radius:8px;background:#f0f0f0;border:none;cursor:pointer">View Full</button>
+    `;
+    containerEl.appendChild(div);
+
+    div.querySelector('.view-arch-btn').addEventListener('click', ()=>{
+      // show a quick modal with full details (we'll reuse archive-results area)
+      const details = `
+        <div style="padding:8px">
+          <h3 style="margin:0 0 8px">${a.templateDay.toUpperCase()} — ${a.date}</h3>
+          <div><strong>Morning</strong></div>
+          <ul>${a.morning.map(m=>`<li>${m.label} — ${m.checked ? '✔' : '✖'}</li>`).join('')}</ul>
+          <div><strong>Tasks</strong></div>
+          <ul>${a.tasks.map(t=>`<li>${t.label} — ${t.checked ? '✔' : '✖'}</li>`).join('')}</ul>
+          <div><strong>Note</strong><div style="padding:6px;background:#fafafa;border-radius:6px;margin-top:4px">${a.note || '<span style="color:#999">none</span>'}</div></div>
+          <div style="margin-top:8px"><strong>Expenses</strong><ul>${a.expenses.map(e=>`<li>${e.category}: €${Number(e.amount).toFixed(2)}</li>`).join('') || '<li>none</li>'}</ul></div>
+        </div>
+      `;
+      const ar = document.getElementById('archive-results');
+      ar.innerHTML = details;
+    });
+  });
+}
+
+/* dropdown search */
+document.getElementById('search-btn').addEventListener('click', ()=>{
+  const d = document.getElementById('search-date').value;
+  const res = searchArchiveByDate(d);
+  const panel = document.getElementById('dropdown-search-results');
+  panel.innerHTML = '';
+  if (!d){ panel.innerHTML = '<div style="color:#666">Choose a date first</div>'; return; }
+  if (!res.length){ panel.innerHTML = '<div style="color:#666">No snapshots</div>'; return; }
+  res.forEach(r=>{
+    const item = document.createElement('div');
+    item.style.padding='8px';item.style.borderBottom='1px solid #eee';
+    item.innerHTML = `<div style="font-weight:700">${r.templateDay.toUpperCase()} — ${r.date}</div>
+      <div style="font-size:13px;color:#555">Tasks done: ${r.tasks.filter(t=>t.checked).length}/${r.tasks.length}</div>`;
+    panel.appendChild(item);
+  });
+});
+
+/* side search */
+document.getElementById('side-search-btn').addEventListener('click', ()=>{
+  const d = document.getElementById('side-search-date').value;
+  const res = searchArchiveByDate(d);
+  renderArchiveResults(res, document.getElementById('side-search-results'));
+});
+
+/* also search button inside dropdown toggles modal and loads results */
+document.getElementById('open-modal').addEventListener('click', ()=>{
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('dropdown-panel').style.display = 'none';
+});
+
+/* modal close */
+document.getElementById('close-modal').addEventListener('click', ()=>document.getElementById('modal').style.display='none');
+
+/* top-right button toggles dropdown */
+document.getElementById('report-btn').addEventListener('click', ()=>{
+  const panel = document.getElementById('dropdown-panel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+});
+
+/* clicking outside closes dropdown */
+document.addEventListener('click', (e)=>{
+  const panel = document.getElementById('dropdown-panel');
+  const btn = document.getElementById('report-btn');
+  if (!panel.contains(e.target) && !btn.contains(e.target)) panel.style.display='none';
+});
+
+/* ============= Generate Report (daily/weekly/monthly) ============= */
+let reportChart;
+function createOrUpdateReportChart(completed, remaining){
+  const ctx = document.getElementById('reportChart').getContext('2d');
+  const data = [completed, remaining];
+  if (reportChart) {
+    reportChart.data.datasets[0].data = data;
+    reportChart.update();
+  } else {
+    reportChart = new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:['Completed','Remaining'],
+        datasets:[{data, backgroundColor:['#4CAF50','#e0e0e0']}]
+      },
+      options:{
+        plugins:{legend:{display:false},datalabels:{formatter:(v,ctx)=>{const t=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);return Math.round((v/t)*100)+'%';},color:'#fff'}}
+      },
+      plugins:[ChartDataLabels]
+    });
+  }
+}
+
+/* compute daily summary from archive entries of that date (we assume user saved snapshots) */
+function computeDailySummary(dateStr){
+  const arr = searchArchiveByDate(dateStr);
+  // If multiple archived entries for same day (different templateDay), we aggregate them
+  let totalTasks = 0, doneTasks = 0, totalMorningMax = 0, doneMorning = 0;
+  let remainingList = [], notes = [], expensesSummary = [];
+  arr.forEach(entry=>{
+    totalMorningMax += entry.morning.length;
+    doneMorning += entry.morningCompleted;
+    entry.tasks.forEach(t=>{
+      totalTasks += 1;
+      if (t.checked) doneTasks += 1; else remainingList.push(`${entry.templateDay.toUpperCase()}: ${t.label}`);
+    });
+    if (entry.note) notes.push(`${entry.templateDay.toUpperCase()}: ${entry.note}`);
+    entry.expenses.forEach(ex => expensesSummary.push(`${entry.templateDay.toUpperCase()}: ${ex.category} €${Number(ex.amount).toFixed(2)}`));
+  });
+  // count morning as tasks as well (treat as completed units)
+  const totalUnits = totalTasks + totalMorningMax;
+  const doneUnits = doneTasks + doneMorning;
+  return {
+    totalUnits, doneUnits, remainingList, notes, expensesSummary, entries: arr
+  };
+}
+
+/* compute weekly summary: archives within weekrange */
+function computeRangeSummary(startDate, endDate){
+  const arr = JSON.parse(localStorage.getItem('archive')) || [];
+  const filtered = arr.filter(a => a.date >= startDate && a.date <= endDate);
+  let totalUnits=0, doneUnits=0, remainingList=[], notes=[], expensesSummary=[];
+  filtered.forEach(entry=>{
+    totalUnits += entry.tasks.length + entry.morning.length;
+    doneUnits += entry.tasks.filter(t=>t.checked).length + entry.morningCompleted;
+    entry.tasks.forEach(t => { if (!t.checked) remainingList.push(`${entry.date} ${entry.templateDay.toUpperCase()}: ${t.label}`); });
+    if (entry.note) notes.push(`${entry.date} ${entry.templateDay.toUpperCase()}: ${entry.note}`);
+    entry.expenses.forEach(ex => expensesSummary.push(`${entry.date} ${entry.templateDay.toUpperCase()}: ${ex.category} €${Number(ex.amount).toFixed(2)}`));
+  });
+  return {totalUnits, doneUnits, remainingList, notes, expensesSummary, entries: filtered};
+}
+
+/* click Generate */
+document.getElementById('generate-report').addEventListener('click', ()=>{
+  const activeTab = document.querySelector('.tab.active').dataset.type;
+  const date = document.getElementById('report-date').value;
+  if (!date){ alert('Select a date'); return; }
+
+  let summary;
+  if (activeTab === 'daily'){
+    summary = computeDailySummary(date);
+    document.getElementById('detail-type').innerText = 'Daily';
+    document.getElementById('detail-date').innerText = date;
+  } else if (activeTab === 'weekly'){
+    const {start,end} = weekRange(date);
+    summary = computeRangeSummary(start,end);
+    document.getElementById('detail-type').innerText = `Weekly (${start} → ${end})`;
+    document.getElementById('detail-date').innerText = `${start} → ${end}`;
+  } else { // monthly
+    const {start,end} = monthRange(date);
+    summary = computeRangeSummary(start,end);
+    document.getElementById('detail-type').innerText = `Monthly (${start} → ${end})`;
+    document.getElementById('detail-date').innerText = `${start} → ${end}`;
+  }
+
+  const completed = summary.doneUnits || 0;
+  const remaining = Math.max((summary.totalUnits || 0) - completed, 0);
+  const total = (summary.totalUnits || 0);
+  const percent = total ? Math.round((completed/total)*100) : 0;
+
+  // update chart and UI
+  createOrUpdateReportChart(completed, remaining);
+  document.getElementById('overall-percent').innerText = percent + '%';
+  document.getElementById('detail-completed').innerText = completed;
+  document.getElementById('detail-remaining').innerText = remaining;
+
+  // remaining list
+  const remEl = document.getElementById('remaining-list');
+  remEl.innerHTML = '';
+  if (!summary.remainingList.length) remEl.innerHTML = '<div style="color:#666">All tasks completed ✔</div>';
+  else {
+    const ul = document.createElement('ul');
+    summary.remainingList.forEach(item => { const li = document.createElement('li'); li.style.marginBottom='6px'; li.innerText = item; ul.appendChild(li); });
+    remEl.appendChild(ul);
+  }
+
+  // archive results summary
+  renderArchiveResults(summary.entries || [], document.getElementById('archive-results'));
+});
+
+/* tab switching */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+/* ============= PDF Export (capture report card) ============= */
+document.getElementById('download-pdf').addEventListener('click', async ()=>{
+  const card = document.querySelector('.modal .card');
+  // hide buttons temporarily for clean capture
+  const btns = card.querySelectorAll('button');
+  btns.forEach(b=>b.style.visibility='hidden');
+  try {
+    const canvas = await html2canvas(card, {scale:2});
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    const name = `report-${Date.now()}.pdf`;
+    pdf.save(name);
+    alert('PDF generated and downloaded: ' + name + '\nIf you want to send it by email, use the "Send via Email" button and attach this PDF.');
+  } catch (err) {
+    console.error(err);
+    alert('Failed to generate PDF: ' + err.message);
+  } finally {
+    btns.forEach(b=>b.style.visibility='visible');
+  }
+});
+
+/* ============= Email helper =============
+  Note: browsers can't attach files automatically via mailto. We'll open a mailto: with a prefilled subject & body
+  and ask user to attach the generated PDF manually (downloaded just prior).
+*/
+document.getElementById('send-email').addEventListener('click', ()=>{
+  const type = document.getElementById('detail-type').innerText;
+  const date = document.getElementById('detail-date').innerText;
+  const completed = document.getElementById('detail-completed').innerText;
+  const remaining = document.getElementById('detail-remaining').innerText;
+  const remainingItems = Array.from(document.getElementById('remaining-list').querySelectorAll('li')).map(li=>li.innerText).slice(0,20);
+  const body = [
+    `Report Type: ${type}`,
+    `Date / Range: ${date}`,
+    `Completed: ${completed}`,
+    `Remaining: ${remaining}`,
+    '',
+    'Remaining tasks (top):',
+    ...remainingItems,
+    '',
+    'Notes: (please attach PDF if you want full details)'
+  ].join('\n');
+  // mailto
+  const subject = encodeURIComponent(`Tracker Report — ${type} — ${date}`);
+  const mailBody = encodeURIComponent(body);
+  window.location.href = `mailto:?subject=${subject}&body=${mailBody}`;
+});
+
+/* ============= Digital Clock ============= */
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 50);
+updateClock();
+
+/* ============= Service Worker registration (if present) ============= */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js").catch(()=>{/* ignore */});
+}
+
+/* ============= Initialize: set default report date to today ============= */
+document.getElementById('report-date').value = formatDate();
+document.getElementById('side-search-date').value = formatDate();
+document.getElementById('search-date').value = formatDate();
+
+/* ============= Dropdown "View Archives" button opens side search results ============= */
+document.getElementById('view-archives').addEventListener('click', ()=>{
+  const d = document.getElementById('report-date').value || formatDate();
+  const res = searchArchiveByDate(d);
+  renderArchiveResults(res, document.getElementById('archive-results'));
+});
+
+/* ============= small UX: clicking outside modal closes it ============= */
+document.getElementById('modal').addEventListener('click', (e)=>{
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').style.display='none';
+});
+</script>
 </body>
 </html>
+
