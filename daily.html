@@ -2,14 +2,102 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Daily Report</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Tracker</title>
+<link rel="stylesheet" href="style.css">
 <style>
-body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 40px; }
-button { padding: 12px 20px; font-size: 20px; background: #2196F3; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+body { background-color:#111; color:#fff; font-family:Arial, sans-serif; margin:0; padding:20px; }
+h1 { text-align:center; margin-bottom:20px; }
+#digital-clock { text-align:center; font-family:monospace; font-size:28px; font-weight:bold; margin-bottom:20px; }
+.day-selector { display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.day-selector button { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; background:#1976D2; color:#fff; }
+.day-container { max-width:500px; margin:0 auto; }
+.task { display:flex; justify-content:space-between; margin:6px 0; background:#222; padding:10px; border-radius:8px; }
+.progress-bar { height:20px; background:#2196F3; text-align:center; line-height:20px; border-radius:10px; width:0; margin-top:6px; }
+button.back { margin-top:20px; display:block; background:#555; color:#fff; text-align:center; }
 </style>
 </head>
 <body>
-<h1>Daily Report Page</h1>
-<button onclick="window.location.href='weekly.html'">Back to Weekly Tracker</button>
+
+<h1>Daily Tracker</h1>
+<div id="digital-clock"></div>
+
+<div class="day-selector" id="day-selector">
+  <button data-day="Monday">Monday</button>
+  <button data-day="Tuesday">Tuesday</button>
+  <button data-day="Wednesday">Wednesday</button>
+  <button data-day="Thursday">Thursday</button>
+  <button data-day="Friday">Friday</button>
+  <button data-day="Saturday">Saturday</button>
+  <button data-day="Sunday">Sunday</button>
+</div>
+
+<div class="day-container" id="day-container">
+  <!-- Selected day tasks will appear here -->
+</div>
+
+<button class="back" onclick="window.location.href='weekly.html'">Back to Weekly Tracker</button>
+
+<script>
+// ====== Clock ======
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById('digital-clock').textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 50);
+updateClock();
+
+// ====== Tasks data ======
+const tasksData = [
+  'Morning Routine',
+  'Programming / Study',
+  'Dutch Course'
+];
+
+const dayContainer = document.getElementById('day-container');
+const dayButtons = document.querySelectorAll('#day-selector button');
+
+dayButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const dayName = btn.dataset.day;
+    renderDay(dayName);
+  });
+});
+
+function renderDay(dayName){
+  dayContainer.innerHTML = `<h2>${dayName} — <span class="daily-percent">0%</span></h2>`;
+  tasksData.forEach(task=>{
+    const div = document.createElement('div');
+    div.className = 'task';
+    div.innerHTML = `<span>${task}</span><input type="checkbox" class="task-checkbox">`;
+    dayContainer.appendChild(div);
+  });
+
+  const checkboxes = dayContainer.querySelectorAll('.task-checkbox');
+  const dailyPercentText = dayContainer.querySelector('.daily-percent');
+  const progressBar = document.createElement('div');
+  progressBar.className = 'progress-bar';
+  dayContainer.appendChild(progressBar);
+
+  checkboxes.forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const done = [...checkboxes].filter(c=>c.checked).length;
+      const percent = Math.round(done/checkboxes.length*100);
+      dailyPercentText.textContent = percent + '%';
+      progressBar.style.width = percent + '%';
+      progressBar.textContent = percent + '%';
+    });
+  });
+}
+
+// Load default first day
+renderDay('Monday');
+</script>
+
 </body>
 </html>
+
