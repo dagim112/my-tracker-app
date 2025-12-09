@@ -3,171 +3,427 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>የዳግም መቁጠሪያ – New UI</title>
+<title>Study & Programming Tracker (Mon–Fri) + Money Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #000000;
-    overflow: hidden;
-  }
+/* GENERAL */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+  padding: 10px;
+  margin: 0;
+}
+h1 { text-align: center; margin-bottom: 20px; }
 
-  /* SPLASH SCREEN */
-  #splash {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #b3e5fc, #4fc3f7);
-    flex-direction: column;
-  }
+/* DIGITAL CLOCK */
+#digital-clock {
+  text-align: center;
+  font-size: 26px;
+  font-family: monospace;
+  font-weight: bold;
+  padding: 12px 20px;
+  margin: 10px auto;
+  width: fit-content;
+  background: #2196F3;
+  color: white;
+  border-radius: 20px;
+}
 
-  #splash h1 {
-    font-size: 40px;
-    color: #004d40;
-    margin-bottom: 20px;
-  }
+/* PROGRESS BARS */
+.progress-container, .day-progress-container {
+  margin: 10px 0;
+  background: #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar, .day-progress-bar {
+  height: 20px;
+  width: 0%;
+  background: #2196F3;
+  color: white;
+  text-align: center;
+  line-height: 20px;
+  font-weight: bold;
+  border-radius: 20px;
+  transition: width 0.3s;
+}
+.day-progress-bar {
+  height: 15px; 
+  font-size: 12px; 
+  line-height: 15px;
+}
 
-  #enter-btn {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: none;
-    background: radial-gradient(circle, #4dd0e1, #0097a7);
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    transition: transform 0.3s;
-  }
-  #enter-btn:hover { transform: scale(1.15); }
+/* TASKS */
+.task {
+  background: #fff;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s;
+}
+.task:hover { transform: scale(1.03); }
+.morning-container {
+  display: none;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 5px;
+}
+.morning-subtasks { 
+  display: flex; 
+  flex-direction: column; 
+  font-size: 14px; 
+}
+canvas { 
+  max-width: 150px; 
+  max-height: 150px; 
+}
 
-  /* MAIN PAGE */
-  #main {
-    display: none;
-    padding: 20px;
-  }
+/* NOTES */
+.day-notes { margin-top: 10px; }
+.note-text {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  border-radius: 15px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  font-size: 14px;
+}
 
-  #top-area {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+/* REMINDER BUTTON */
+#start-sound {
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 25px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+}
 
-  #digital-clock {
-    font-size: 22px;
-    background: #00796b;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-  }
-
-  #reminder-btn {
-    background: #03a9f4;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-  }
-
-  #days-grid {
-    margin-top: 30px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
-
-  .day-card {
-    background: #eeeeee;
-    padding: 30px;
-    font-size: 24px;
-    border-radius: 15px;
-    text-align: center;
-    cursor: pointer;
-    color: darkgreen;
-    font-weight: bold;
-    transition: transform 0.2s;
-  }
-  .day-card:hover { transform: scale(1.05); }
-
-  #day-panel {
-    position: fixed;
-    top: 0; right: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-  }
-
-  #day-content {
-    background: white;
-    width: 90%; height: 90%;
-    border-radius: 20px;
-    padding: 20px;
-    overflow-y: auto;
-  }
-
-  #close-day {
-    background: red;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-  }
+/* MONEY TRACKER */
+.day-money {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+.expense-input, .expense-category {
+  padding: 5px;
+  margin-right: 5px;
+}
+.add-expense {
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: #FFAFBD;
+  border: none;
+  cursor: pointer;
+}
+.expense-list {
+  margin-top: 5px;
+  list-style-type: disc;
+  padding-left: 20px;
+}
 </style>
+
 </head>
 <body>
-<div id="splash">
-  <h1>የዳግም መቁጠሪያ</h1>
-  <button id="enter-btn">Enter</button>
+
+<h1> የዳግም መቁጠሪያ </h1>
+
+<!-- DIGITAL CLOCK -->
+<div id="digital-clock"></div>
+
+<!-- WEEKLY PROGRESS -->
+<div class="progress-container">
+  <div class="progress-bar" id="weekly-progress">0%</div>
 </div>
-<div id="main">
-  <div id="top-area">
-    <div id="digital-clock">00:00:00</div>
-    <button id="reminder-btn">Voice Reminder</button>
-  </div>
-  <div id="days-grid">
-    <div class="day-card" data-day="mon">Monday</div>
-    <div class="day-card" data-day="tue">Tuesday</div>
-    <div class="day-card" data-day="wed">Wednesday</div>
-    <div class="day-card" data-day="thu">Thursday</div>
-    <div class="day-card" data-day="fri">Friday</div>
-    <div class="day-card" data-day="sat">Saturday</div>
-    <div class="day-card" data-day="sun">Sunday</div>
-  </div>
-</div>
-<div id="day-panel">
-  <div id="day-content">
-    <button id="close-day">Close</button>
-    <h2 id="day-title"></h2>
-  </div>
-</div>
+
+<!-- AUDIO REMINDER -->
+<button id="start-sound">Start Hourly Voice Reminder</button>
+<audio id="my-sound" src="your-voice.mp3" preload="auto"></audio>
+
+<div class="days-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
 <script>
-const enterBtn = document.getElementById('enter-btn');
-enterBtn.onclick = () => {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('main').style.display = 'block';
-};
-setInterval(() => {
-  const t = new Date();
-  document.getElementById('digital-clock').textContent = t.toLocaleTimeString();
-}, 1000);
-const dayPanel = document.getElementById('day-panel');
-const dayTitle = document.getElementById('day-title');
-document.querySelectorAll('.day-card').forEach(card => {
-  card.onclick = () => {
-    dayTitle.textContent = card.textContent;
-    dayPanel.style.display = 'flex';
-  };
+/* ============================== */
+/* CREATE DAY SECTIONS */
+/* ============================== */
+const daysData = ['mon','tue','wed','thu','fri'];
+const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const container = document.querySelector('.days-container');
+const morningCharts = {};
+
+daysData.forEach((day, index) => {
+  const dayDiv = document.createElement('div');
+  dayDiv.className='day';
+  dayDiv.dataset.day = day;
+
+  dayDiv.innerHTML = `
+    <h2>${dayNames[index]}</h2>
+
+    <div class="day-progress-container">
+      <div class="day-progress-bar" id="progress-${day}">0%</div>
+    </div>
+
+    <div class="task morning">
+      <span class="morning-title">🌞 Morning Routine (6:00–8:00)</span>
+      <div class="morning-container">
+        <div class="morning-subtasks">
+          <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
+          <label><input type="checkbox" class="morning-checkbox"> Prayer / Meditation</label>
+          <label><input type="checkbox" class="morning-checkbox"> Visualization</label>
+          <label><input type="checkbox" class="morning-checkbox"> Exercise / Stretch</label>
+          <label><input type="checkbox" class="morning-checkbox"> Healthy Breakfast</label>
+          <label><input type="checkbox" class="morning-checkbox"> Reading / Learning</label>
+          <label><input type="checkbox" class="morning-checkbox"> Journaling</label>
+        </div>
+        <canvas id="morningChart-${day}"></canvas>
+      </div>
+    </div>
+
+    <div class="task">8:00–12:00 💻 Programming / HYF Prep <input type="checkbox" class="task-checkbox"></div>
+    <div class="task">12:00–16:30 🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
+    <div class="task">16:30–17:30 💻 Review & Light Coding <input type="checkbox" class="task-checkbox"></div>
+
+    <div class="day-notes">
+      <label>📝 Notes / Reason:</label>
+      <textarea class="note-text"></textarea>
+    </div>
+
+    <!-- MONEY TRACKER -->
+    <div class="day-money">
+      <label>💰 Daily Expenses:</label>
+      <input type="number" class="expense-input" placeholder="Amount spent (€)">
+      <select class="expense-category">
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Bills">Bills</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="add-expense">Add</button>
+
+      <ul class="expense-list"></ul>
+      <div>Total: €<span class="expense-total">0</span></div>
+    </div>
+  `;
+
+  container.appendChild(dayDiv);
 });
-document.getElementById('close-day').onclick = () => {
-  dayPanel.style.display = 'none';
-};
+
+/* ============================== */
+/* TOGGLE MORNING SECTION */
+/* ============================== */
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('morning-title')) {
+    const box = e.target.nextElementSibling;
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+  }
+});
+
+/* ============================== */
+/* SAVE CHECKBOX STATES */
+/* ============================== */
+function saveState(){
+  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
+    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
+    localStorage.setItem(key, cb.checked);
+  });
+}
+
+function loadState(){
+  document.querySelectorAll('.morning-checkbox, .task-checkbox').forEach(cb => {
+    const key = cb.closest('.day').dataset.day + '-' + cb.parentElement.innerText.trim();
+    if (localStorage.getItem(key) === 'true') cb.checked = true;
+  });
+}
+
+/* ============================== */
+/* SAVE NOTES */
+/* ============================== */
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('note-text')) {
+    const key = 'note-' + e.target.closest('.day').dataset.day;
+    localStorage.setItem(key, e.target.value);
+  }
+});
+
+document.querySelectorAll('.note-text').forEach(note => {
+  const key = 'note-' + note.closest('.day').dataset.day;
+  const saved = localStorage.getItem(key);
+  if (saved) note.value = saved;
+});
+
+/* ============================== */
+/* CHARTS */
+/* ============================== */
+document.querySelectorAll('.day').forEach(day => {
+  const ctx = day.querySelector('canvas').getContext('2d');
+  morningCharts[day.dataset.day] = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Completed','Remaining'],
+      datasets:[{ data:[0,7], backgroundColor:['#4CAF50','#ccc'] }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{ display:false },
+        datalabels:{
+          formatter: (value, ctx)=>{
+            const total = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            return ctx.dataIndex === 0 ? Math.round((value/total)*100)+'%' : '';
+          },
+          color:'#fff'
+        }
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+});
+
+/* ============================== */
+/* UPDATE PROGRESS */
+/* ============================== */
+function updateMorningChart(day){
+  const chart = morningCharts[day.dataset.day];
+  const boxes = day.querySelectorAll('.morning-checkbox');
+  const completed = [...boxes].filter(cb => cb.checked).length;
+  chart.data.datasets[0].data = [completed, boxes.length - completed];
+  chart.update();
+  return completed / boxes.length;
+}
+
+function updateProgress(){
+  let total = 0, done = 0;
+
+  document.querySelectorAll('.day').forEach(day => {
+    let morningPercent = updateMorningChart(day);
+
+    const tasks = day.querySelectorAll('.task-checkbox');
+    const taskDone = [...tasks].filter(cb => cb.checked).length;
+
+    const dayTotal = 1 + tasks.length;  
+    const dayDone = morningPercent + taskDone;
+
+    total += dayTotal;
+    done += dayDone;
+
+    const percent = Math.round((dayDone / dayTotal) * 100);
+    const bar = day.querySelector('.day-progress-bar');
+    bar.style.width = percent + '%';
+    bar.innerText = percent + '%';
+  });
+
+  const weekly = Math.round((done / total) * 100);
+  const weeklyBar = document.getElementById('weekly-progress');
+  weeklyBar.style.width = weekly + '%';
+  weeklyBar.innerText = weekly + '%';
+}
+
+/* CHECKBOX LISTENER */
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox') {
+    saveState();
+    updateProgress();
+  }
+});
+
+/* INITIALIZE */
+loadState();
+updateProgress();
+
+/* ============================== */
+/* HOURLY REMINDER */
+/* ============================== */
+const audio = document.getElementById('my-sound');
+document.getElementById('start-sound').addEventListener('click', () => {
+  audio.play();
+  setInterval(() => audio.play(), 3600000);
+  alert("Hourly reminder started!");
+});
+
+/* ============================== */
+/* DIGITAL CLOCK */
+/* ============================== */
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  document.getElementById("digital-clock").textContent = `${h}:${m}:${s}.${ms}`;
+}
+setInterval(updateClock, 16);
+updateClock();
+
+/* ============================== */
+/* DAILY MONEY TRACKER */
+/* ============================== */
+document.querySelectorAll('.day').forEach(day => {
+  const addBtn = day.querySelector('.add-expense');
+  const input = day.querySelector('.expense-input');
+  const category = day.querySelector('.expense-category');
+  const list = day.querySelector('.expense-list');
+  const totalSpan = day.querySelector('.expense-total');
+  const dayKey = 'money-' + day.dataset.day;
+
+  // Load saved expenses
+  let expenses = JSON.parse(localStorage.getItem(dayKey)) || [];
+  function renderExpenses() {
+    list.innerHTML = '';
+    let total = 0;
+    expenses.forEach((e, i) => {
+      const li = document.createElement('li');
+      li.textContent = `${e.category}: €${e.amount}`;
+      li.style.cursor = 'pointer';
+      li.title = "Click to remove";
+      li.addEventListener('click', () => {
+        expenses.splice(i,1);
+        saveExpenses();
+        renderExpenses();
+      });
+      list.appendChild(li);
+      total += parseFloat(e.amount);
+    });
+    totalSpan.textContent = total.toFixed(2);
+  }
+
+  function saveExpenses() {
+    localStorage.setItem(dayKey, JSON.stringify(expenses));
+  }
+
+  addBtn.addEventListener('click', () => {
+    const amount = parseFloat(input.value);
+    const cat = category.value;
+    if (!isNaN(amount) && amount > 0) {
+      expenses.push({amount, category: cat});
+      saveExpenses();
+      renderExpenses();
+      input.value = '';
+    }
+  });
+
+  renderExpenses();
+});
+
+/* SERVICE WORKER */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
 </script>
+
 </body>
 </html>
