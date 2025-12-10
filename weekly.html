@@ -25,6 +25,15 @@ canvas{max-width:150px;max-height:150px;margin-top:6px;}
 <body>
 
 <h1>Weekly Overview (Mon–Sun)</h1>
+<!-- Top-Right Report Menu -->
+<div class="menu-container">
+  <button id="menu-btn">☰</button>
+  <div id="menu-dropdown" class="dropdown hidden">
+      <button class="menu-item" data-type="daily">Daily Report (PDF)</button>
+      <button class="menu-item" data-type="weekly">Weekly Report (PDF)</button>
+      <button class="menu-item" data-type="monthly">Monthly Report (PDF)</button>
+  </div>
+</div>
 
 <!-- Weekly progress bar -->
 <div id="weekly-progress-container">
