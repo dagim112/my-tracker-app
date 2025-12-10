@@ -4,21 +4,18 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Monthly Tracker</title>
+<link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body{font-family:Arial,sans-serif;margin:0;padding:14px;background:#000;color:#fff;}
-h1{text-align:center;color:#0f4d0f;margin-bottom:16px;}
-.wrapper{max-width:700px;margin:0 auto;padding:12px;border-radius:12px;border:1px solid #0f4d0f;}
-.day-summary{margin:10px 0;padding:10px;background:#111;border-radius:12px;border:1px solid #0f4d0f;}
-.day-summary h2{margin:0 0 6px 0;color:#0f4d0f;}
-.day-summary .progress{background:#222;height:24px;border-radius:12px;overflow:hidden;text-align:center;color:#fff;font-weight:700;}
-canvas{max-width:250px;max-height:250px;margin:20px auto;display:block;}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
+
+<h1>Monthly Overview</h1>
+
 <!-- Top-Right Report Menu -->
 <div class="menu-container">
-  <button id="menu-btn">☰</button>
+  <button id="menu-btn">☰ Reports</button>
   <div id="menu-dropdown" class="dropdown hidden">
       <button class="menu-item" data-type="daily">Daily Report (PDF)</button>
       <button class="menu-item" data-type="weekly">Weekly Report (PDF)</button>
@@ -26,10 +23,8 @@ canvas{max-width:250px;max-height:250px;margin:20px auto;display:block;}
   </div>
 </div>
 
-<h1>Monthly Overview</h1>
-
 <div class="wrapper">
-  <!-- Weekly summaries -->
+  <!-- Daily summaries -->
 </div>
 
 <h2 style="text-align:center;margin-top:24px;">Monthly Completion Pie</h2>
@@ -43,27 +38,26 @@ const wrapper = document.querySelector('.wrapper');
 
 // ---------------- LOAD DAILY PROGRESS ----------------
 function getDayProgress(day){
-  // Count all checkboxes for that day
   let total = 0, done = 0;
-  for(let i=0;i<50;i++){ // max 50 checkboxes per day
+  for(let i=0;i<50;i++){
     const val = localStorage.getItem(`${day}-${i}`);
     if(val===null) break;
     total++;
     if(val==='true') done++;
   }
-  const pct = total?Math.round(done/total*100):0;
-  return pct;
+  return total ? Math.round(done/total*100) : 0;
 }
 
-// ---------------- BUILD WEEKLY SUMMARIES ----------------
-let monthlyTotal=0, monthlyDone=0;
+// ---------------- BUILD DAILY SUMMARIES ----------------
+let monthlyDone = 0;
 days.forEach((day,idx)=>{
   const pct = getDayProgress(day);
-  monthlyTotal+=100;
-  monthlyDone+=pct;
+  monthlyDone += pct;
 
   const dayDiv = document.createElement('div');
   dayDiv.className = 'day-summary';
+  dayDiv.style.background = '#001f4d'; // dark blue
+  dayDiv.style.color = '#fff'; // super white
   dayDiv.innerHTML = `
     <h2>${dayNames[idx]}</h2>
     <div class="progress" style="width:${pct}%">${pct}%</div>
@@ -82,7 +76,35 @@ new Chart(ctx,{
   },
   options:{plugins:{legend:{display:true,labels:{color:'#fff'}}}}
 });
-</script>
 
+// ---------------- MENU TOGGLE & PDF ----------------
+const menuBtn = document.getElementById("menu-btn");
+const dropdown = document.getElementById("menu-dropdown");
+
+menuBtn.addEventListener("click",()=>dropdown.classList.toggle("hidden"));
+
+document.addEventListener("click",(e)=>{
+  if(!menuBtn.contains(e.target) && !dropdown.contains(e.target)){
+    dropdown.classList.add("hidden");
+  }
+});
+
+document.querySelectorAll(".menu-item").forEach(btn=>{
+  btn.addEventListener("click", async ()=>{
+    const type = btn.dataset.type;
+    dropdown.classList.add("hidden");
+    const element = document.body;
+    const canvas = await html2canvas(element,{scale:2});
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF("p","mm","a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height*(imgWidth/canvas.width);
+    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
+    pdf.save(`${type}-report.pdf`);
+  });
+});
+</script>
 </body>
 </html>
+
