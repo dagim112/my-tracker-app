@@ -19,6 +19,15 @@ canvas{max-width:250px;max-height:250px;margin:12px auto;display:block;}
 </style>
 </head>
 <body>
+<!-- Top-Right Report Menu -->
+<div class="menu-container">
+  <button id="menu-btn">☰</button>
+  <div id="menu-dropdown" class="dropdown hidden">
+      <button class="menu-item" data-type="daily">Daily Report (PDF)</button>
+      <button class="menu-item" data-type="weekly">Weekly Report (PDF)</button>
+      <button class="menu-item" data-type="monthly">Monthly Report (PDF)</button>
+  </div>
+</div>
 
 <h1 id="day-title">Daily Tracker</h1>
 <div id="digital-clock"></div>
