@@ -4,30 +4,21 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Weekly Tracker</title>
-<style>
-body{font-family:Arial,sans-serif;margin:0;padding:14px;background:#000;color:#fff;}
-h1{text-align:center;margin-bottom:16px;color:#0f4d0f;font-weight:700;}
-#weekly-progress-container{margin-bottom:12px;}
-#weekly-progress{width:0%;height:28px;background:#0f4d0f;color:#fff;text-align:center;line-height:28px;border-radius:14px;font-weight:700;}
-.wrapper{display:flex;flex-direction:column;gap:12px;}
-.day{background:#111;border-radius:12px;padding:12px;border:1px solid #0f4d0f;cursor:pointer;}
-.day h2{color:#0f4d0f;margin:0 0 4px;}
-.day .day-percent{font-weight:700;color:#fff;margin-bottom:4px;}
-.day-content{display:none;margin-top:8px;}
-.task{background:#222;margin:6px 0;padding:10px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;}
-.task input[type="checkbox"]{width:20px;height:20px;}
-.task:hover{background:#333;}
-.morning-subtasks{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
-.note-text{width:100%;min-height:60px;padding:8px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;}
-canvas{max-width:150px;max-height:150px;margin-top:6px;}
-</style>
+<link rel="stylesheet" href="style.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- html2canvas + jsPDF -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
 <h1>Weekly Overview (Mon–Sun)</h1>
-<!-- Top-Right Report Menu -->
+
+<!-- Top-right Menu -->
 <div class="menu-container">
-  <button id="menu-btn">☰</button>
+  <button id="menu-btn">☰ Reports</button>
   <div id="menu-dropdown" class="dropdown hidden">
       <button class="menu-item" data-type="daily">Daily Report (PDF)</button>
       <button class="menu-item" data-type="weekly">Weekly Report (PDF)</button>
@@ -42,12 +33,13 @@ canvas{max-width:150px;max-height:150px;margin-top:6px;}
 
 <div class="wrapper"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// ========================= DATA =========================
 const daysData = ['mon','tue','wed','thu','fri','sat','sun'];
 const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const wrapper = document.querySelector('.wrapper');
 
+// ========================= LOCAL STORAGE =========================
 function saveDayProgress(dayEl){
   const key = dayEl.dataset.day;
   dayEl.querySelectorAll('input[type="checkbox"]').forEach((cb,i)=>{
@@ -63,6 +55,7 @@ function loadDayProgress(dayEl){
   });
 }
 
+// ========================= PERCENTAGES =========================
 function calcDayPercent(dayEl){
   const checkboxes = Array.from(dayEl.querySelectorAll('input[type="checkbox"]'));
   const total = checkboxes.length;
@@ -86,6 +79,9 @@ function updateWeeklyPercent(){
   document.getElementById('weekly-progress').style.width = percent+'%';
   document.getElementById('weekly-progress').textContent = percent+'%';
 }
+
+// ========================= BUILD DAYS =========================
+const morningCharts = {};
 
 daysData.forEach((day,idx)=>{
   const dayDiv = document.createElement('div');
@@ -115,14 +111,15 @@ daysData.forEach((day,idx)=>{
   loadDayProgress(dayDiv);
   calcDayPercent(dayDiv);
   updateWeeklyPercent();
+  updateDayChart(dayDiv.dataset.day);
 
-  // Toggle day content
+  // Toggle content
   dayDiv.querySelector('h2').addEventListener('click',()=>{
     const content = dayDiv.querySelector('.day-content');
     content.style.display = content.style.display==='block'?'none':'block';
   });
 
-  // On checkbox change
+  // Checkbox listeners
   dayDiv.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
     cb.addEventListener('change',()=>{
       saveDayProgress(dayDiv);
@@ -133,8 +130,7 @@ daysData.forEach((day,idx)=>{
   });
 });
 
-// Pie chart for morning routine
-const morningCharts = {};
+// ========================= PIE CHART =========================
 function updateDayChart(day){
   const dayEl = document.querySelector(`.day[data-day="${day}"]`);
   const checkboxes = Array.from(dayEl.querySelectorAll('.morning-subtasks input[type="checkbox"]'));
@@ -148,12 +144,38 @@ function updateDayChart(day){
       labels:['Done','Remaining'],
       datasets:[{data:[done,remaining], backgroundColor:['#0f4d0f','#555'] }]
     },
-    options:{plugins:{legend:{display:true,color:'#fff'}}}
+    options:{plugins:{legend:{display:true,labels:{color:'#fff'}}}}
   });
 }
 
-// Initialize all morning charts
-daysData.forEach(day=>updateDayChart(day));
+// ========================= MENU TOGGLE & PDF =========================
+const menuBtn = document.getElementById("menu-btn");
+const dropdown = document.getElementById("menu-dropdown");
+menuBtn.addEventListener("click", () => dropdown.classList.toggle("hidden"));
+
+document.addEventListener("click",(e)=>{
+  if(!menuBtn.contains(e.target) && !dropdown.contains(e.target)){
+    dropdown.classList.add("hidden");
+  }
+});
+
+document.querySelectorAll(".menu-item").forEach(btn=>{
+  btn.addEventListener("click", async ()=>{
+    const type = btn.dataset.type;
+    dropdown.classList.add("hidden");
+
+    let element = document.body;
+    const canvas = await html2canvas(element,{scale:2});
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF("p","mm","a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height*(imgWidth/canvas.width);
+    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
+    pdf.save(`${type}-report.pdf`);
+  });
+});
 </script>
 </body>
 </html>
+
