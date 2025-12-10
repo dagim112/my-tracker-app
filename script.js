@@ -211,6 +211,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
         loadMonthly();
     }
 });
+/ ------- MENU TOGGLE -------
+const menuBtn = document.getElementById("menu-btn");
+const dropdown = document.getElementById("menu-dropdown");
+
+menuBtn.addEventListener("click", () => {
+    dropdown.classList.toggle("hidden");
+});
+
+// Hide dropdown when clicking outside
+document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add("hidden");
+    }
+});
 
 
 
