@@ -8,6 +8,7 @@ body {
     background: #000; /* Dark background */
     color: #fff;
 }
+
 h1, h2 {
     text-align: center;
     color: #0f4d0f; /* Dark green */
@@ -38,13 +39,16 @@ button {
     font-weight: 700;
     transition: 0.2s;
 }
+
 button:hover {
     opacity: 0.85;
 }
+
 .blue-btn {
     background: #2196F3;
     color: #fff;
 }
+
 .green-btn {
     background: #0f4d0f;
     color: #fff;
@@ -56,7 +60,8 @@ button:hover {
     flex-direction: column;
     gap: 12px;
     max-width: 800px;
-    margin: 0 auto;
+    margin-left: auto;     /* RIGHT SIDE FIX */
+    margin-right: 12px;    /* RIGHT SIDE FIX */
     padding-bottom: 20px;
 }
 
@@ -68,18 +73,23 @@ button:hover {
     border: 1px solid #0f4d0f;
     cursor: pointer;
     transition: 0.2s;
+    text-align: right;   /* RIGHT SIDE FIX */
 }
+
 .day:hover, .day-summary:hover {
     background: #222;
 }
+
 .day h2, .day-summary h2 {
     margin: 0 0 8px 0;
+    text-align: right;  /* RIGHT SIDE FIX */
 }
 
 /* ---------------- DAY CONTENT ---------------- */
 .day-content {
     margin-top: 8px;
     display: none;
+    text-align: right;  /* RIGHT SIDE FIX */
 }
 
 /* ---------------- TASKS ---------------- */
@@ -92,10 +102,12 @@ button:hover {
     justify-content: space-between;
     align-items: center;
 }
+
 .task input[type="checkbox"] {
     width: 20px;
     height: 20px;
 }
+
 .task:hover {
     background: #333;
 }
@@ -106,6 +118,12 @@ button:hover {
     flex-direction: column;
     gap: 6px;
     margin-top: 6px;
+}
+
+.morning-subtasks label {
+    display: flex;
+    justify-content: space-between; /* keeps checkbox on right */
+    width: 100%;
 }
 
 /* ---------------- NOTES ---------------- */
@@ -119,6 +137,7 @@ button:hover {
     color: #fff;
     margin-top: 8px;
     resize: vertical;
+    text-align: right;   /* RIGHT SIDE FIX */
 }
 
 /* ---------------- EXPENSES ---------------- */
@@ -129,6 +148,7 @@ button:hover {
     border: 1px solid #0f4d0f;
     border-radius: 12px;
 }
+
 .expense-input, .expense-category {
     padding: 6px;
     margin-right: 6px;
@@ -137,6 +157,7 @@ button:hover {
     background: #111;
     color: #fff;
 }
+
 .add-expense {
     padding: 6px 10px;
     background: #0f4d0f;
@@ -144,6 +165,7 @@ button:hover {
     border-radius: 8px;
     cursor: pointer;
 }
+
 .expense-list {
     margin-top: 6px;
     padding-left: 20px;
@@ -157,6 +179,7 @@ button:hover {
     height: 24px;
     margin-top: 6px;
 }
+
 .day-progress-bar, .progress {
     height: 100%;
     text-align: center;
@@ -185,6 +208,7 @@ canvas {
     justify-content: center;
     z-index: 9999;
 }
+
 .modal .card {
     background: #111;
     color: #fff;
@@ -195,15 +219,18 @@ canvas {
     width: 90%;
     max-width: 800px;
 }
+
 .modal header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
+
 .modal button {
     cursor: pointer;
 }
+
 .tab {
     padding: 6px 12px;
     border-radius: 8px;
@@ -212,30 +239,13 @@ canvas {
     display: inline-block;
     cursor: pointer;
 }
+
 .tab.active {
     background: #0f4d0f;
     color: #fff;
 }
 
-/* ---------------- TOP-RIGHT BUTTON ---------------- */
-.top-right {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 999;
-}
-
-/* ---------------- RESPONSIVE ---------------- */
-@media screen and (max-width: 600px){
-    .wrapper {
-        padding: 8px;
-    }
-    .task {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-/* ------- REPORT MENU ------- */
+/* ------- REPORT MENU - FIXED TOP RIGHT ------- */
 .menu-container {
     position: fixed;
     top: 15px;
@@ -284,3 +294,16 @@ canvas {
     background: #222;
 }
 
+/* ---------------- RESPONSIVE ---------------- */
+@media screen and (max-width: 600px){
+    .wrapper {
+        padding: 8px;
+        margin: 0 auto; /* Center on small screens */
+    }
+    .day, 
+    .day-summary,
+    .day-content,
+    .note-text {
+        text-align: left; /* readable on mobile */
+    }
+}
