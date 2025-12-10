@@ -7,13 +7,45 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button class="landing-btn" onclick="startTracker()">የዳግም መቁጠሪያ</button>
+
+    <!-- Landing Button -->
+    <button class="landing-btn blue-btn" onclick="startTracker()">የዳግም መቁጠሪያ</button>
+
+    <!-- Top-Right Menu -->
+    <div class="menu-container">
+        <button id="menu-btn">☰ Menu</button>
+        <div class="dropdown hidden">
+            <button class="menu-item" onclick="downloadReport('daily')">Daily PDF</button>
+            <button class="menu-item" onclick="downloadReport('weekly')">Weekly PDF</button>
+            <button class="menu-item" onclick="downloadReport('monthly')">Monthly PDF</button>
+        </div>
+    </div>
 
     <script>
         function startTracker() {
             // Redirect to weekly.html
             window.location.href = 'weekly.html';
         }
+
+        // Toggle dropdown menu
+        const menuBtn = document.getElementById('menu-btn');
+        const dropdown = document.querySelector('.dropdown');
+        menuBtn.addEventListener('click', () => {
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Example PDF export function
+        function downloadReport(type) {
+            alert(`This will download ${type} report as PDF.`);
+            // Here you can call your jsPDF/html2canvas functions
+        }
+
+        // Close dropdown if clicked outside
+        window.addEventListener('click', function(e){
+            if(!menuBtn.contains(e.target) && !dropdown.contains(e.target)){
+                dropdown.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
