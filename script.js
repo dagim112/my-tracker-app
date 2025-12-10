@@ -33,15 +33,12 @@ function formatDate(d=new Date()){
 /* Load saved checkboxes and notes from localStorage */
 function loadTemplate(dayEl){
     const key = 'tmpl-'+dayEl.dataset.day;
-    // Morning
     dayEl.querySelectorAll('.morning-checkbox').forEach((cb,i)=>{
         if(localStorage.getItem(`${key}-mor-${i}`) === 'true') cb.checked = true;
     });
-    // Tasks
     dayEl.querySelectorAll('.task-checkbox').forEach((cb,i)=>{
         if(localStorage.getItem(`${key}-task-${i}`) === 'true') cb.checked = true;
     });
-    // Notes
     const note = localStorage.getItem(`${key}-note`);
     if(note) dayEl.querySelector('.note-text').value = note;
 }
@@ -183,7 +180,6 @@ function loadDaily(){
    Monthly Page (monthly.html)
 ========================= */
 function loadMonthly(){
-    // Collect all snapshots from localStorage
     let total = 0, done = 0;
     daysData.forEach(day=>{
         const key = 'tmpl-'+day;
@@ -211,56 +207,46 @@ document.addEventListener('DOMContentLoaded', ()=>{
         loadMonthly();
     }
 });
-/ ------- MENU TOGGLE -------
-const menuBtn = document.getElementById("menu-btn");
-const dropdown = document.getElementById("menu-dropdown");
 
-menuBtn.addEventListener("click", () => {
+/* =========================
+   MENU TOGGLE + PDF
+========================= */
+const menuBtn = document.getElementById("menu-btn");
+const dropdown = document.querySelector(".dropdown");
+
+menuBtn?.addEventListener("click", () => {
     dropdown.classList.toggle("hidden");
 });
 
-// Hide dropdown when clicking outside
 document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    if (!menuBtn?.contains(e.target) && !dropdown?.contains(e.target)) {
         dropdown.classList.add("hidden");
     }
 });
-// ------- PDF GENERATION (html2canvas + jsPDF) -------
+
 document.querySelectorAll(".menu-item").forEach(btn => {
     btn.addEventListener("click", async () => {
-        const type = btn.dataset.type;
+        const type = btn.textContent.toLowerCase().includes("daily") ? "daily" :
+                     btn.textContent.toLowerCase().includes("weekly") ? "weekly" :
+                     "monthly";
 
         dropdown.classList.add("hidden");
 
-        // Select what to export
-        let element;
+        let element = document.body; // Change this to specific container if needed
 
-        if (type === "daily") {
-            element = document.body; // You can target a specific container
-        }
-        if (type === "weekly") {
-            element = document.body;
-        }
-        if (type === "monthly") {
-            element = document.body;
-        }
-
-        // Convert to PDF
         const canvas = await html2canvas(element, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jspdf.jsPDF("p", "mm", "a4");
 
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-
         const imgWidth = pageWidth;
         const imgHeight = canvas.height * (imgWidth / canvas.width);
 
         pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-
         pdf.save(`${type}-report.pdf`);
     });
 });
+
 
 
 
