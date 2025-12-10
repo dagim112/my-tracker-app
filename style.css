@@ -8,10 +8,9 @@ body {
     background: #000; /* Dark background */
     color: #fff;
 }
-
 h1, h2 {
     text-align: center;
-    color: #ffffff; /* super white */
+    color: #0f4d0f; /* Dark green */
     margin-bottom: 16px;
     font-weight: 700;
 }
@@ -24,7 +23,7 @@ h1, h2 {
     font-weight: 700;
     padding: 10px 18px;
     margin: 8px auto 16px auto;
-    background: #2196F3;
+    background: #2196F3; /* Bright blue */
     color: white;
     border-radius: 18px;
     width: fit-content;
@@ -39,50 +38,42 @@ button {
     font-weight: 700;
     transition: 0.2s;
 }
-
 button:hover {
     opacity: 0.85;
 }
-
 .blue-btn {
     background: #2196F3;
     color: #fff;
 }
-
 .green-btn {
     background: #0f4d0f;
     color: #fff;
 }
 
-/* ---------------- WRAPPER ---------------- */
+/* ---------------- WRAPPERS ---------------- */
 .wrapper {
     display: flex;
     flex-direction: column;
     gap: 12px;
     max-width: 800px;
-    margin-left: 10px;    /* LEFT SIDE FIX */
-    margin-right: auto;
+    margin: 0 auto;
     padding-bottom: 20px;
 }
 
 /* ---------------- DAY BOX ---------------- */
 .day, .day-summary {
-    background: #001a33;     /* DARK BLUE BOX */
+    background: #111;
     border-radius: 12px;
     padding: 12px;
-    border: 1px solid #004080; /* softer blue border */
+    border: 1px solid #0f4d0f;
     cursor: pointer;
     transition: 0.2s;
-    color: #ffffff; /* SUPER WHITE TEXT */
 }
-
 .day:hover, .day-summary:hover {
-    background: #00264d; /* slightly lighter blue on hover */
+    background: #222;
 }
-
 .day h2, .day-summary h2 {
     margin: 0 0 8px 0;
-    color: #ffffff;
 }
 
 /* ---------------- DAY CONTENT ---------------- */
@@ -93,8 +84,7 @@ button:hover {
 
 /* ---------------- TASKS ---------------- */
 .task {
-    background: #003366;  /* dark blue task */
-    color: #ffffff;
+    background: #222;
     margin: 6px 0;
     padding: 10px;
     border-radius: 20px;
@@ -102,14 +92,12 @@ button:hover {
     justify-content: space-between;
     align-items: center;
 }
-
-.task:hover {
-    background: #004080; /* lighter blue hover */
-}
-
 .task input[type="checkbox"] {
     width: 20px;
     height: 20px;
+}
+.task:hover {
+    background: #333;
 }
 
 /* ---------------- MORNING ROUTINE ---------------- */
@@ -120,66 +108,35 @@ button:hover {
     margin-top: 6px;
 }
 
-.morning-subtasks label {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    color: #ffffff;
-}
-
 /* ---------------- NOTES ---------------- */
 .note-text {
     width: 100%;
     min-height: 60px;
     padding: 8px;
     border-radius: 10px;
-    border: 1px solid #004080;
-    background: #001a33;
-    color: #ffffff;
+    border: 1px solid #555;
+    background: #111;
+    color: #fff;
     margin-top: 8px;
     resize: vertical;
-}
-
-/* ---------------- PROGRESS BARS ---------------- */
-.day-progress-container,
-.progress {
-    background: #003366;
-    border-radius: 12px;
-    overflow: hidden;
-    height: 24px;
-    margin-top: 6px;
-}
-
-.day-progress-bar,
-.progress {
-    height: 100%;
-    text-align: center;
-    line-height: 24px;
-    color: #fff;
-    font-weight: 700;
-    background: #0f4d0f;
-    transition: 0.3s;
 }
 
 /* ---------------- EXPENSES ---------------- */
 .day-money {
     margin-top: 10px;
     padding: 10px;
-    background: #001a33;
-    border: 1px solid #004080;
+    background: #111;
+    border: 1px solid #0f4d0f;
     border-radius: 12px;
-    color: #ffffff;
 }
-
 .expense-input, .expense-category {
     padding: 6px;
     margin-right: 6px;
     border-radius: 6px;
-    border: 1px solid #004080;
-    background: #001a33;
+    border: 1px solid #555;
+    background: #111;
     color: #fff;
 }
-
 .add-expense {
     padding: 6px 10px;
     background: #0f4d0f;
@@ -187,10 +144,27 @@ button:hover {
     border-radius: 8px;
     cursor: pointer;
 }
-
 .expense-list {
     margin-top: 6px;
     padding-left: 20px;
+}
+
+/* ---------------- PROGRESS BARS ---------------- */
+.day-progress-container, .progress {
+    background: #222;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 24px;
+    margin-top: 6px;
+}
+.day-progress-bar, .progress {
+    height: 100%;
+    text-align: center;
+    line-height: 24px;
+    color: #fff;
+    font-weight: 700;
+    background: #0f4d0f;
+    transition: 0.3s;
 }
 
 /* ---------------- CHARTS ---------------- */
@@ -211,9 +185,8 @@ canvas {
     justify-content: center;
     z-index: 9999;
 }
-
 .modal .card {
-    background: #001a33;
+    background: #111;
     color: #fff;
     border-radius: 12px;
     padding: 16px;
@@ -222,82 +195,111 @@ canvas {
     width: 90%;
     max-width: 800px;
 }
-
 .modal header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
-
+.modal button {
+    cursor: pointer;
+}
 .tab {
     padding: 6px 12px;
     border-radius: 8px;
-    background: #003366;
+    background: #222;
     margin-right: 6px;
     display: inline-block;
     cursor: pointer;
 }
-
 .tab.active {
     background: #0f4d0f;
     color: #fff;
 }
 
-/* ------- REPORT MENU - FIXED TOP RIGHT ------- */
-.menu-container {
+/* ---------------- TOP-RIGHT BUTTON ---------------- */
+.top-right {
     position: fixed;
-    top: 15px;
-    right: 15px;
-    z-index: 10000;
-}
-
-#menu-btn {
-    background: #2196F3;
-    border: none;
-    color: white;
-    font-size: 22px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.dropdown {
-    position: absolute;
-    top: 48px;
-    right: 0;
-    background: #001a33;
-    border: 1px solid #004080;
-    border-radius: 10px;
-    width: 200px;
-    display: flex;
-    flex-direction: column;
-}
-
-.dropdown.hidden {
-    display: none;
-}
-
-.menu-item {
-    background: none;
-    border: none;
-    color: white;
-    padding: 10px;
-    text-align: left;
-    cursor: pointer;
-    width: 100%;
-}
-
-.menu-item:hover {
-    background: #003366;
+    top: 14px;
+    right: 14px;
+    z-index: 999;
 }
 
 /* ---------------- RESPONSIVE ---------------- */
 @media screen and (max-width: 600px){
     .wrapper {
         padding: 8px;
-        margin-left: auto;
-        margin-right: auto;
+    }
+    .task {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
+
+/* =========================
+   TOP-RIGHT MENU BUTTON (NEW)
+========================= */
+.menu-container {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10000;
+}
+
+/* BIG ORANGE BUTTON */
+#menu-btn {
+    background: #FF7A00;          /* ORANGE */
+    color: #fff;
+    font-size: 26px;              /* Bigger */
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(255, 122, 0, 0.6);
+    transition: 0.25s ease;
+}
+#menu-btn:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 18px rgba(255, 122, 0, 0.9);
+}
+
+/* DROPDOWN MENU */
+.dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    background: #001F4D;          /* DARK BLUE */
+    border-radius: 12px;
+    border: 1px solid #004080;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeDown 0.25s ease;
+}
+.dropdown.hidden {
+    display: none;
+}
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* MENU ITEMS */
+.menu-item {
+    padding: 14px 10px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: #ffffff;               /* SUPER WHITE TEXT */
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+.menu-item:hover {
+    background: #003A80;          /* Slightly brighter blue */
+    letter-spacing: 0.5px;
+}
+
