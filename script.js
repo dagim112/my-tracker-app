@@ -225,6 +225,43 @@ document.addEventListener("click", (e) => {
         dropdown.classList.add("hidden");
     }
 });
+// ------- PDF GENERATION (html2canvas + jsPDF) -------
+document.querySelectorAll(".menu-item").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const type = btn.dataset.type;
+
+        dropdown.classList.add("hidden");
+
+        // Select what to export
+        let element;
+
+        if (type === "daily") {
+            element = document.body; // You can target a specific container
+        }
+        if (type === "weekly") {
+            element = document.body;
+        }
+        if (type === "monthly") {
+            element = document.body;
+        }
+
+        // Convert to PDF
+        const canvas = await html2canvas(element, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF("p", "mm", "a4");
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = pageWidth;
+        const imgHeight = canvas.height * (imgWidth / canvas.width);
+
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+        pdf.save(`${type}-report.pdf`);
+    });
+});
+
 
 
 
