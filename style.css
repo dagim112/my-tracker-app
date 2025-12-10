@@ -62,18 +62,20 @@ button:hover {
 
 /* ---------------- DAY BOX ---------------- */
 .day, .day-summary {
-    background: #111;
+    background: #001F4D; /* Dark blue boxes */
     border-radius: 12px;
     padding: 12px;
-    border: 1px solid #0f4d0f;
+    border: 1px solid #004080;
     cursor: pointer;
     transition: 0.2s;
+    color: #fff; /* Super white text */
 }
 .day:hover, .day-summary:hover {
-    background: #222;
+    background: #003A80;
 }
 .day h2, .day-summary h2 {
     margin: 0 0 8px 0;
+    color: #ffffff; /* Ensure super white headers */
 }
 
 /* ---------------- DAY CONTENT ---------------- */
@@ -84,20 +86,21 @@ button:hover {
 
 /* ---------------- TASKS ---------------- */
 .task {
-    background: #222;
+    background: #001F4D; /* Dark blue tasks */
     margin: 6px 0;
     padding: 10px;
     border-radius: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #fff;
 }
 .task input[type="checkbox"] {
     width: 20px;
     height: 20px;
 }
 .task:hover {
-    background: #333;
+    background: #003A80;
 }
 
 /* ---------------- MORNING ROUTINE ---------------- */
@@ -115,38 +118,10 @@ button:hover {
     padding: 8px;
     border-radius: 10px;
     border: 1px solid #555;
-    background: #111;
-    color: #fff;
+    background: #001F4D; /* Dark blue input background */
+    color: #fff; /* Super white text */
     margin-top: 8px;
     resize: vertical;
-}
-
-/* ---------------- EXPENSES ---------------- */
-.day-money {
-    margin-top: 10px;
-    padding: 10px;
-    background: #111;
-    border: 1px solid #0f4d0f;
-    border-radius: 12px;
-}
-.expense-input, .expense-category {
-    padding: 6px;
-    margin-right: 6px;
-    border-radius: 6px;
-    border: 1px solid #555;
-    background: #111;
-    color: #fff;
-}
-.add-expense {
-    padding: 6px 10px;
-    background: #0f4d0f;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.expense-list {
-    margin-top: 6px;
-    padding-left: 20px;
 }
 
 /* ---------------- PROGRESS BARS ---------------- */
@@ -175,56 +150,6 @@ canvas {
     display: block;
 }
 
-/* ---------------- MODAL ---------------- */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-.modal .card {
-    background: #111;
-    color: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    max-height: 90vh;
-    overflow:auto;
-    width: 90%;
-    max-width: 800px;
-}
-.modal header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-.modal button {
-    cursor: pointer;
-}
-.tab {
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: #222;
-    margin-right: 6px;
-    display: inline-block;
-    cursor: pointer;
-}
-.tab.active {
-    background: #0f4d0f;
-    color: #fff;
-}
-
-/* ---------------- TOP-RIGHT BUTTON ---------------- */
-.top-right {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 999;
-}
-
 /* ---------------- RESPONSIVE ---------------- */
 @media screen and (max-width: 600px){
     .wrapper {
@@ -237,7 +162,7 @@ canvas {
 }
 
 /* =========================
-   TOP-RIGHT MENU BUTTON (NEW)
+   TOP-RIGHT MENU BUTTON
 ========================= */
 .menu-container {
     position: fixed;
@@ -302,4 +227,5 @@ canvas {
     background: #003A80;          /* Slightly brighter blue */
     letter-spacing: 0.5px;
 }
+
 
