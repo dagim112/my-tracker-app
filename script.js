@@ -14,12 +14,6 @@ setInterval(updateClock, 50);
 updateClock();
 
 /* =========================
-   CONSTANTS
-========================= */
-const daysData = ['mon','tue','wed','thu','fri','sat','sun'];
-const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-
-/* =========================
    DATE HELPERS
 ========================= */
 function formatDate(d = new Date()) {
@@ -30,45 +24,56 @@ function formatDate(d = new Date()) {
     return `${y}-${m}-${day}`;
 }
 
-function getDayKey(date = new Date()) {
-    return `lt-${formatDate(date)}`;
-}
-
 /* =========================
-   STORAGE HELPERS
+   LOCAL STORAGE HELPERS
 ========================= */
-function saveDayData(date, data) {
-    localStorage.setItem(getDayKey(date), JSON.stringify(data));
+function getDayKey(day) {
+    // Accept string 'mon' etc or Date
+    if (typeof day === 'string') return `lt-${day}`;
+    return `lt-${formatDate(day)}`;
 }
 
-function loadDayData(date) {
-    const raw = localStorage.getItem(getDayKey(date));
+function saveDayData(key, data) {
+    localStorage.setItem(getDayKey(key), JSON.stringify(data));
+}
+
+function loadDayData(key) {
+    const raw = localStorage.getItem(getDayKey(key));
     return raw ? JSON.parse(raw) : null;
 }
 
 /* =========================
-   SAVE / LOAD DAY TEMPLATE
+   SAVE / LOAD TEMPLATE
 ========================= */
-function saveTemplate(dayEl, date = new Date()) {
+function saveTemplate(dayEl) {
     const morning = [...dayEl.querySelectorAll('.morning-checkbox')].map(cb => cb.checked);
     const tasks = [...dayEl.querySelectorAll('.task-checkbox')].map(cb => cb.checked);
     const note = dayEl.querySelector('.note-text')?.value || '';
+
+    // Expense
+    const expenseAmount = dayEl.querySelector('.expense-amount')?.value || 0;
+    const expenseType = dayEl.querySelector('.expense-type')?.value || 'other';
 
     const total = morning.length + tasks.length;
     const done = morning.filter(Boolean).length + tasks.filter(Boolean).length;
     const percent = total ? Math.round((done / total) * 100) : 0;
 
-    saveDayData(date, {
-        date: formatDate(date),
+    const data = {
         morning,
         tasks,
         note,
-        percent
-    });
+        percent,
+        expense: {
+            amount: Number(expenseAmount),
+            type: expenseType
+        }
+    };
+
+    saveDayData(dayEl.dataset.day || new Date(), data);
 }
 
-function loadTemplate(dayEl, date = new Date()) {
-    const data = loadDayData(date);
+function loadTemplate(dayEl) {
+    const data = loadDayData(dayEl.dataset.day || new Date());
     if (!data) return;
 
     dayEl.querySelectorAll('.morning-checkbox')
@@ -77,169 +82,125 @@ function loadTemplate(dayEl, date = new Date()) {
     dayEl.querySelectorAll('.task-checkbox')
         .forEach((cb, i) => cb.checked = !!data.tasks?.[i]);
 
-    if (dayEl.querySelector('.note-text')) {
-        dayEl.querySelector('.note-text').value = data.note || '';
+    if (dayEl.querySelector('.note-text')) dayEl.querySelector('.note-text').value = data.note || '';
+
+    if (data.expense) {
+        dayEl.querySelector('.expense-amount').value = data.expense.amount;
+        dayEl.querySelector('.expense-type').value = data.expense.type;
     }
 }
 
 /* =========================
-   PROGRESS CALCULATION
+   DAILY PAGE LOADER
 ========================= */
-function setProgressBar(bar, percent) {
-    bar.style.width = percent + '%';
-    bar.textContent = percent + '%';
-
-    bar.style.background =
-        percent < 30 ? '#e74c3c' :
-        percent < 70 ? '#f1c40f' :
-        '#2ecc71';
-}
-
-function calcDailyProgress(dayEl, date) {
-    const morning = [...dayEl.querySelectorAll('.morning-checkbox')];
-    const tasks = [...dayEl.querySelectorAll('.task-checkbox')];
-
-    const total = morning.length + tasks.length;
-    const done = morning.filter(cb => cb.checked).length +
-                 tasks.filter(cb => cb.checked).length;
-
-    const percent = total ? Math.round((done / total) * 100) : 0;
-
-    const bar = dayEl.querySelector('.day-progress-bar');
-    if (bar) setProgressBar(bar, percent);
-
-    saveTemplate(dayEl, date);
-    return percent;
-}
-
-function updateWeeklyProgress() {
-    let total = 0, done = 0;
-
-    for (let i = 0; i < 7; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - date.getDay() + i + 1);
-
-        const data = loadDayData(date);
-        if (!data) continue;
-
-        const units = data.morning.length + data.tasks.length;
-        total += units;
-        done += Math.round((data.percent / 100) * units);
-    }
-
-    const percent = total ? Math.round((done / total) * 100) : 0;
-    const bar = document.getElementById('weekly-progress');
-    if (bar) setProgressBar(bar, percent);
-}
-
-/* =========================
-   STREAK SYSTEM
-========================= */
-function calculateStreak() {
-    let streak = 0;
-    let date = new Date();
-
-    while (true) {
-        const data = loadDayData(date);
-        if (!data || data.percent < 50) break;
-        streak++;
-        date.setDate(date.getDate() - 1);
-    }
-
-    const el = document.getElementById('streak');
-    if (el) el.textContent = `🔥 Streak: ${streak} days`;
-}
-
-/* =========================
-   WEEKLY PAGE BUILDER
-========================= */
-function buildWeekly() {
-    const container = document.querySelector('.days-container');
-    if (!container) return;
+function loadDailyPage() {
+    const params = new URLSearchParams(window.location.search);
+    const day = params.get('day') || 'mon';
+    const daysData = ['mon','tue','wed','thu','fri','sat','sun'];
+    const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const container = document.getElementById('day-content');
     container.innerHTML = '';
 
-    for (let i = 0; i < 7; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - date.getDay() + i + 1);
+    const idx = daysData.indexOf(day);
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day';
+    dayDiv.dataset.day = day;
 
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'day';
-        dayDiv.innerHTML = `
-            <h2> ${dayNames[i]}<br>
-                <small class="day-date">
-             ${formatDate(date).split('-').reverse().join(' / ')}
-                </small>
-           </h2>
-            <div class="day-progress-container">
-                <div class="day-progress-bar">0%</div>
+    dayDiv.innerHTML = `
+        <h2>
+          ${dayNames[idx]}<br>
+          <small class="day-date">
+            ${formatDate(new Date()).split('-').reverse().join(' / ')}
+          </small>
+        </h2>
+
+        <div class="task morning">
+            🌞 Morning Routine:
+            <div class="morning-subtasks">
+                <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
+                <label><input type="checkbox" class="morning-checkbox"> Exercise</label>
+                <label><input type="checkbox" class="morning-checkbox"> Meditation</label>
+                <label><input type="checkbox" class="morning-checkbox"> Reading</label>
             </div>
+            <canvas id="chart-${day}"></canvas>
+        </div>
 
-            <div class="task">
-                <strong class="morning-title">🌞 Morning Routine</strong>
-                <div class="morning-container" style="display:none;">
-                    <label><input type="checkbox" class="morning-checkbox"> Water</label>
-                    <label><input type="checkbox" class="morning-checkbox"> Exercise</label>
-                    <label><input type="checkbox" class="morning-checkbox"> Meditation</label>
-                </div>
-            </div>
+        <div class="task">💻 Work / Study <input type="checkbox" class="task-checkbox"></div>
+        <div class="task">🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
 
-            <div class="task">Work / Study <input type="checkbox" class="task-checkbox"></div>
-            <div class="task">Break / Lunch <input type="checkbox" class="task-checkbox"></div>
+        <textarea class="note-text" placeholder="Notes / Reason"></textarea>
 
-            <textarea class="note-text" placeholder="Notes..."></textarea>
-        `;
+        <!-- Expense Tracker -->
+        <div class="expense-box">
+            <label>💰 Expense Tracker:</label><br>
+            <input type="number" class="expense-amount" placeholder="Amount">
+            <select class="expense-type">
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+    `;
 
-        container.appendChild(dayDiv);
-        loadTemplate(dayDiv, date);
+    container.appendChild(dayDiv);
 
-        dayDiv.addEventListener('change', () => {
-            calcDailyProgress(dayDiv, date);
-            updateWeeklyProgress();
-            calculateStreak();
+    // Load from localStorage
+    loadTemplate(dayDiv);
+
+    // Morning Pie Chart
+    const ctx = document.getElementById(`chart-${day}`).getContext('2d');
+    const morningCheckboxes = [...dayDiv.querySelectorAll('.morning-checkbox')];
+    function updateChart() {
+        const done = morningCheckboxes.filter(cb => cb.checked).length;
+        const remaining = morningCheckboxes.length - done;
+        if (window.morningChart) window.morningChart.destroy();
+        window.morningChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Done','Remaining'],
+                datasets:[{
+                    data:[done,remaining],
+                    backgroundColor:['#0f4d0f','#555'],
+                }]
+            },
+            options:{
+                plugins:{
+                    legend:{position:'bottom',labels:{color:'#000'}},
+                    tooltip:{enabled:true}
+                }
+            }
         });
     }
+    updateChart();
 
-    document.addEventListener('click', e => {
-        if (e.target.classList.contains('morning-title')) {
-            const box = e.target.nextElementSibling;
-            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-        }
+    // Event listeners
+    morningCheckboxes.forEach(cb => cb.addEventListener('change', ()=>{
+        saveTemplate(dayDiv);
+        updateChart();
+    }));
+
+    dayDiv.querySelectorAll('.task-checkbox').forEach(cb=>{
+        cb.addEventListener('change', ()=>{
+            saveTemplate(dayDiv);
+        });
     });
 
-    updateWeeklyProgress();
-    calculateStreak();
+    dayDiv.querySelector('.note-text').addEventListener('input',()=>{
+        saveTemplate(dayDiv);
+    });
+
+    const expenseInputs = dayDiv.querySelectorAll('.expense-amount, .expense-type');
+    expenseInputs.forEach(input => {
+        input.addEventListener('input', () => saveTemplate(dayDiv));
+    });
 }
 
 /* =========================
-   MONTHLY PAGE
+   INITIALIZE
 ========================= */
-function loadMonthly() {
-    const container = document.querySelector('.days-container');
-    if (!container) return;
-
-    let total = 0, done = 0;
-
-    Object.keys(localStorage)
-        .filter(k => k.startsWith('lt-'))
-        .forEach(k => {
-            const data = JSON.parse(localStorage.getItem(k));
-            if (!data) return;
-
-            const units = data.morning.length + data.tasks.length;
-            total += units;
-            done += Math.round((data.percent / 100) * units);
-        });
-
-    const percent = total ? Math.round((done / total) * 100) : 0;
-    container.innerHTML = `<h2>📊 Monthly Completion: ${percent}%</h2>`;
-}
-
-/* =========================
-   INIT
-========================= */
-document.addEventListener('DOMContentLoaded', () => {
-    if (location.href.includes('weekly.html')) buildWeekly();
-    if (location.href.includes('monthly.html')) loadMonthly();
+document.addEventListener('DOMContentLoaded', ()=>{
+    updateClock();
+    loadDailyPage();
 });
 
 
