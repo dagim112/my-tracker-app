@@ -28,7 +28,6 @@ function formatDate(d = new Date()) {
    LOCAL STORAGE HELPERS
 ========================= */
 function getDayKey(day) {
-    // Accept string 'mon' etc or Date
     if (typeof day === 'string') return `lt-${day}`;
     return `lt-${formatDate(day)}`;
 }
@@ -48,19 +47,21 @@ function loadDayData(key) {
 function saveTemplate(dayEl) {
     const morning = [...dayEl.querySelectorAll('.morning-checkbox')].map(cb => cb.checked);
     const tasks = [...dayEl.querySelectorAll('.task-checkbox')].map(cb => cb.checked);
+    const meals = [...dayEl.querySelectorAll('.meal-checkbox')].map(cb => cb.checked);
     const note = dayEl.querySelector('.note-text')?.value || '';
 
     // Expense
     const expenseAmount = dayEl.querySelector('.expense-amount')?.value || 0;
     const expenseType = dayEl.querySelector('.expense-type')?.value || 'other';
 
-    const total = morning.length + tasks.length;
-    const done = morning.filter(Boolean).length + tasks.filter(Boolean).length;
+    const total = morning.length + tasks.length + meals.length;
+    const done = morning.filter(Boolean).length + tasks.filter(Boolean).length + meals.filter(Boolean).length;
     const percent = total ? Math.round((done / total) * 100) : 0;
 
     const data = {
         morning,
         tasks,
+        meals,
         note,
         percent,
         expense: {
@@ -81,6 +82,9 @@ function loadTemplate(dayEl) {
 
     dayEl.querySelectorAll('.task-checkbox')
         .forEach((cb, i) => cb.checked = !!data.tasks?.[i]);
+
+    dayEl.querySelectorAll('.meal-checkbox')
+        .forEach((cb, i) => cb.checked = !!data.meals?.[i]);
 
     if (dayEl.querySelector('.note-text')) dayEl.querySelector('.note-text').value = data.note || '';
 
@@ -114,6 +118,7 @@ function loadDailyPage() {
           </small>
         </h2>
 
+        <!-- Morning Routine -->
         <div class="task morning">
             🌞 Morning Routine:
             <div class="morning-subtasks">
@@ -125,9 +130,16 @@ function loadDailyPage() {
             <canvas id="chart-${day}"></canvas>
         </div>
 
+        <!-- Daily Tasks -->
         <div class="task">💻 Work / Study <input type="checkbox" class="task-checkbox"></div>
         <div class="task">🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
 
+        <!-- Meals -->
+        <div class="task">🍽 Breakfast (08:00) <input type="checkbox" class="meal-checkbox"></div>
+        <div class="task">🍛 Lunch (12:00) <input type="checkbox" class="meal-checkbox"></div>
+        <div class="task">🍽 Dinner (19:00) <input type="checkbox" class="meal-checkbox"></div>
+
+        <!-- Notes -->
         <textarea class="note-text" placeholder="Notes / Reason"></textarea>
 
         <!-- Expense Tracker -->
@@ -139,6 +151,12 @@ function loadDailyPage() {
                 <option value="transport">Transport</option>
                 <option value="other">Other</option>
             </select>
+        </div>
+
+        <!-- Alarms -->
+        <div class="alarm-box">
+            ⏰ Wake up 06:00 <input type="checkbox" class="alarm-wake"><br>
+            🌙 Sleep 22:00 <input type="checkbox" class="alarm-sleep">
         </div>
     `;
 
@@ -174,26 +192,34 @@ function loadDailyPage() {
     updateChart();
 
     // Event listeners
-    morningCheckboxes.forEach(cb => cb.addEventListener('change', ()=>{
-        saveTemplate(dayDiv);
-        updateChart();
-    }));
-
-    dayDiv.querySelectorAll('.task-checkbox').forEach(cb=>{
-        cb.addEventListener('change', ()=>{
+    const allInputs = dayDiv.querySelectorAll('.morning-checkbox, .task-checkbox, .meal-checkbox, .note-text, .expense-amount, .expense-type, .alarm-wake, .alarm-sleep');
+    allInputs.forEach(input => {
+        const eventType = input.tagName === 'TEXTAREA' || input.type === 'number' || input.tagName === 'SELECT' ? 'input' : 'change';
+        input.addEventListener(eventType, ()=>{
             saveTemplate(dayDiv);
+            updateChart();
         });
     });
-
-    dayDiv.querySelector('.note-text').addEventListener('input',()=>{
-        saveTemplate(dayDiv);
-    });
-
-    const expenseInputs = dayDiv.querySelectorAll('.expense-amount, .expense-type');
-    expenseInputs.forEach(input => {
-        input.addEventListener('input', () => saveTemplate(dayDiv));
-    });
 }
+
+/* =========================
+   ALARM CHECK
+========================= */
+const alarmSound = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+setInterval(()=>{
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const timeStr = `${hours}:${minutes}`;
+
+    document.querySelectorAll('.day').forEach(day=>{
+        const wake = day.querySelector('.alarm-wake');
+        const sleep = day.querySelector('.alarm-sleep');
+
+        if(wake?.checked && hours === 6 && minutes === 0) alarmSound.play();
+        if(sleep?.checked && hours === 22 && minutes === 0) alarmSound.play();
+    });
+}, 60000);
 
 /* =========================
    INITIALIZE
