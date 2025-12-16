@@ -165,7 +165,12 @@ function buildWeekly() {
         const dayDiv = document.createElement('div');
         dayDiv.className = 'day';
         dayDiv.innerHTML = `
-            <h2>${dayNames[i]}</h2>
+            <h2>
+  ${dayNames[i]}<br>
+  <small class="day-date">
+    ${formatDate(date).split('-').reverse().join(' / ')}
+  </small>
+</h2>
             <div class="day-progress-container">
                 <div class="day-progress-bar">0%</div>
             </div>
