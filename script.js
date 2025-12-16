@@ -50,7 +50,6 @@ function saveTemplate(dayEl) {
     const meals = [...dayEl.querySelectorAll('.meal-checkbox')].map(cb => cb.checked);
     const note = dayEl.querySelector('.note-text')?.value || '';
 
-    // Expense
     const expenseAmount = dayEl.querySelector('.expense-amount')?.value || 0;
     const expenseType = dayEl.querySelector('.expense-type')?.value || 'other';
 
@@ -118,9 +117,9 @@ function loadDailyPage() {
           </small>
         </h2>
 
-        <!-- Morning Routine -->
-        <div class="task morning">
-            🌞 Morning Routine:
+        <!-- Timeline items in order -->
+        <div class="timeline-item morning">
+            06:00–08:00 🌞 Morning Routine:
             <div class="morning-subtasks">
                 <label><input type="checkbox" class="morning-checkbox"> Drink Water</label>
                 <label><input type="checkbox" class="morning-checkbox"> Exercise</label>
@@ -130,42 +129,40 @@ function loadDailyPage() {
             <canvas id="chart-${day}"></canvas>
         </div>
 
-        <!-- Daily Tasks -->
-        <div class="task">💻 Work / Study <input type="checkbox" class="task-checkbox"></div>
-        <div class="task">🇳🇱 Dutch Course <input type="checkbox" class="task-checkbox"></div>
+        <div class="timeline-item">08:00 🍽 Breakfast <input type="checkbox" class="meal-checkbox"></div>
+        <div class="timeline-item">09:00–12:00 💻 Work / Study <input type="checkbox" class="task-checkbox"></div>
+        <div class="timeline-item">12:00 🍛 Lunch <input type="checkbox" class="meal-checkbox"></div>
+        <div class="timeline-item">13:00–18:00 💻 Work / Study <input type="checkbox" class="task-checkbox"></div>
+        <div class="timeline-item">19:00 🍽 Dinner <input type="checkbox" class="meal-checkbox"></div>
 
-        <!-- Meals -->
-        <div class="task">🍽 Breakfast (08:00) <input type="checkbox" class="meal-checkbox"></div>
-        <div class="task">🍛 Lunch (12:00) <input type="checkbox" class="meal-checkbox"></div>
-        <div class="task">🍽 Dinner (19:00) <input type="checkbox" class="meal-checkbox"></div>
-
-        <!-- Notes -->
         <textarea class="note-text" placeholder="Notes / Reason"></textarea>
 
-        <!-- Expense Tracker -->
         <div class="expense-box">
-            <label>💰 Expense Tracker:</label><br>
-            <input type="number" class="expense-amount" placeholder="Amount">
-            <select class="expense-type">
-                <option value="food">Food</option>
-                <option value="transport">Transport</option>
-                <option value="other">Other</option>
-            </select>
+            <h3>💰 Expenses</h3>
+            <label>Amount: <input type="number" class="expense-amount"></label>
+            <label>Category: 
+                <select class="expense-type">
+                    <option value="food">Food</option>
+                    <option value="transport">Transport</option>
+                    <option value="other">Other</option>
+                </select>
+            </label>
         </div>
 
-        <!-- Alarms -->
-        <div class="alarm-box">
-            ⏰ Wake up 06:00 <input type="checkbox" class="alarm-wake"><br>
+        <div class="timeline-item alarm-box">
+            ⏰ Wake up 06:00 <input type="checkbox" class="alarm-wake">
+        </div>
+        <div class="timeline-item alarm-box">
             🌙 Sleep 22:00 <input type="checkbox" class="alarm-sleep">
         </div>
     `;
 
     container.appendChild(dayDiv);
 
-    // Load from localStorage
+    // Load saved data
     loadTemplate(dayDiv);
 
-    // Morning Pie Chart
+    // Morning routine chart
     const ctx = document.getElementById(`chart-${day}`).getContext('2d');
     const morningCheckboxes = [...dayDiv.querySelectorAll('.morning-checkbox')];
     function updateChart() {
@@ -191,7 +188,7 @@ function loadDailyPage() {
     }
     updateChart();
 
-    // Event listeners
+    // Event listeners for all checkboxes and inputs
     const allInputs = dayDiv.querySelectorAll('.morning-checkbox, .task-checkbox, .meal-checkbox, .note-text, .expense-amount, .expense-type, .alarm-wake, .alarm-sleep');
     allInputs.forEach(input => {
         const eventType = input.tagName === 'TEXTAREA' || input.type === 'number' || input.tagName === 'SELECT' ? 'input' : 'change';
@@ -210,7 +207,6 @@ setInterval(()=>{
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const timeStr = `${hours}:${minutes}`;
 
     document.querySelectorAll('.day').forEach(day=>{
         const wake = day.querySelector('.alarm-wake');
